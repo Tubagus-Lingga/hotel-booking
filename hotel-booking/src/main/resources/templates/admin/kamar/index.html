@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Kamar Tersedia</title>
+</head>
+<body>
+
+<h2>Daftar Kamar Tersedia</h2>
+
+<table border="1">
+    <tr>
+        <th>No</th>
+        <th>Nomor</th>
+        <th>Tipe</th>
+        <th>Harga</th>
+        <th>Aksi</th>
+    </tr>
+
+    <a th:href="@{/admin/kamar/tambah}">Tambah Kamar</a>
+
+    <tr th:each="kamar, i : ${listKamar}">
+        <td th:text="${i.count}"></td>
+        <td th:text="${kamar.nomorKamar}"></td>
+        <td th:text="${kamar.tipe}"></td>
+        <td th:text="${kamar.harga}"></td>
+        <td>
+            <a th:href="@{/admin/kamar/edit/{id}(id=${kamar.id})}">Edit</a>
+            |
+            <a th:href="@{/admin/kamar/hapus/{id}(id=${kamar.id})}" onclick="return confirm('Yakin hapus kamar ini?')">Hapus</a>
+        </td>
+    </tr>
+</table>
+
+<a th:href="@{/admin/dashboard}">Kembali</a>
+
+</body>
+</html>

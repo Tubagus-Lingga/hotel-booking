@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Grand Choco-Pink</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-transparent" id="navbar">
+        <a href="#" class="navbar-brand serif">Grand Choco-Pink</a>
+        <div class="navbar-nav">
+            <a th:href="@{/login}" class="nav-link">Sign In</a>
+            <a th:href="@{/register}" class="btn btn-primary" style="width: auto; padding: 12px 30px;">Book Now</a>
+        </div>
+    </nav>
+
+    <header class="dashboard-hero">
+        <h1 class="serif">Discover Your Sanctum</h1>
+        <p>Halo, <span th:text="${session.loginUser.username}"
+                style="color: var(--accent); font-weight: 700;">User</span>. Temukan ketenangan dalam kemewahan
+            Choco-Pink yang tak tertandingi.</p>
+    </header>
+
+    <main class="room-section">
+        <div class="room-grid">
+            <div th:each="kamar, iterStat : ${kamarList}" class="room-card">
+                <div class="room-image-wrapper">
+                    <img th:if="${kamar.tipe == 'Standard'}" th:src="@{/images/standard_room.png}" class="room-image"
+                        alt="Standard Room">
+                    <img th:if="${kamar.tipe == 'Executive'}" th:src="@{/images/executive_room.png}" class="room-image"
+                        alt="Executive Room">
+                    <img th:unless="${kamar.tipe == 'Standard' or kamar.tipe == 'Executive'}"
+                        src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80"
+                        class="room-image" alt="Room">
+                </div>
+
+                <div class="room-content">
+                    <div class="room-number" th:text="${iterStat.count < 10 ? '0' + iterStat.count : iterStat.count}">01
+                    </div>
+                    <div class="room-details">
+                        <h2 class="room-type serif" th:text="${kamar.tipe + ' Room'}">Standard Room</h2>
+                        <p class="room-description"
+                            th:text="${kamar.tipe == 'Standard' ? 'Kamar nyaman dengan pilihan Twin atau Double bed, cocok untuk perjalanan bisnis atau liburan singkat.' : 'Kemewahan ekstra dengan ruang lebih luas, bathtub, dan fasilitas premium untuk kenyamanan maksimal Anda.'}">
+                            Description text...</p>
+
+                        <div class="room-facilities">
+                            <!-- Common Facilities -->
+                            <span class="facility-pill"><i class="fas fa-wind"></i> Hairdryer</span>
+                            <span class="facility-pill"><i class="fas fa-wifi"></i> Free Wi-Fi</span>
+                            <span class="facility-pill"><i class="fas fa-tv"></i> TV</span>
+
+                            <!-- Standard Specific -->
+                            <span th:if="${kamar.tipe == 'Standard'}" class="facility-pill"><i
+                                    class="fas fa-shower"></i> Shower</span>
+
+                            <!-- Executive Specific -->
+                            <th:block th:if="${kamar.tipe == 'Executive'}">
+                                <span class="facility-pill"><i class="fas fa-bath"></i> Bathtub</span>
+                                <span class="facility-pill"><i class="fas fa-couch"></i> Sofa</span>
+                                <span class="facility-pill"><i class="fas fa-glass-martini-alt"></i> Mini Bar</span>
+                                <span class="facility-pill"><i class="fas fa-desktop"></i> Smart TV</span>
+                            </th:block>
+                        </div>
+
+                        <div class="room-price">
+                            Rp <span
+                                th:text="${#numbers.formatDecimal(kamar.harga, 0, 'POINT', 0, 'COMMA')}">300,000</span>
+                            <span>/ malam</span>
+                        </div>
+
+                        <div style="display: flex; gap: 20px; align-items: center;">
+                            <span th:if="${kamar.tersedia}" class="btn"
+                                style="width: auto; pointer-events: none; background: #E8F5E9; color: #2E7D32; padding: 10px 24px;">Tersedia</span>
+                            <span th:unless="${kamar.tersedia}" class="btn"
+                                style="width: auto; pointer-events: none; background: #FFEBEE; color: #C62828; padding: 10px 24px;">Penuh</span>
+
+                            <a th:if="${kamar.tersedia}" th:href="@{'/reservasi/' + ${kamar.id}}"
+                                class="btn btn-primary" style="width: auto;">Explore & Book</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+
+</html>
