@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Choco-Pink Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+    <style>
+        .hero-banner {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary-dark);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar" id="navbar">
+        <a href="#" class="navbar-brand serif">Grand Choco-Pink</a>
+        <div class="navbar-nav">
+            <a th:href="@{/login}" class="nav-link">Sign In</a>
+            <a th:href="@{/register}" class="btn btn-primary" style="width: auto; padding: 12px 30px;">Book Now</a>
+        </div>
+    </nav>
+
+    <header class="hero-banner">
+        <div class="container">
+            <h1 class="hero-title serif">The Art of Living</h1>
+            <p class="hero-subtitle">Mewah, Manis, Tak Terlupakan</p>
+            <div class="cta-group">
+                <a th:href="@{/register}" class="btn btn-primary" style="width: 200px;">Getting Started</a>
+                <a href="#facilities" class="btn btn-outline" style="width: 200px;">Explore More</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="facilities" class="facilities-banner">
+        <h2 class="serif">Fasilitas Eksklusif</h2>
+        <div class="facility-grid">
+            <div class="facility-item" onclick="window.location.href='#swimming-pool'">
+                <div class="facility-image-wrapper">
+                    <img th:src="@{/images/swimming_pool.png}" alt="Swimming Pool" class="facility-image">
+                </div>
+                <div class="facility-content">
+                    <h3 class="serif">Swimming Pool</h3>
+                    <p>Infinity pool dengan pemandangan cakrawala yang memukau</p>
+                </div>
+            </div>
+            <div class="facility-item" onclick="window.location.href='#gym'">
+                <div class="facility-image-wrapper">
+                    <img th:src="@{/images/gym.png}" alt="GYM" class="facility-image">
+                </div>
+                <div class="facility-content">
+                    <h3 class="serif">GYM</h3>
+                    <p>Pusat kebugaran modern 24 jam dengan instruktur profesional</p>
+                </div>
+            </div>
+            <div class="facility-item" onclick="window.location.href='#restaurant'">
+                <div class="facility-image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"
+                        alt="Restaurant" class="facility-image">
+                </div>
+                <div class="facility-content">
+                    <h3 class="serif">Restaurant</h3>
+                    <p>Petualangan kuliner bintang lima dengan bahan organik pilihan</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+
+</html>
