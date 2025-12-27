@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Room | Grand Choco-Pink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .booking-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .room-summary {
+            background: #F8F9FA;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .room-summary img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body style="background: #F8F9FA; color: var(--text);">
+
+    <nav class="navbar" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 1rem 5%;">
+        <a href="#" class="navbar-brand serif" style="color: var(--primary);">Grand Choco-Pink</a>
+        <a th:href="@{/customer/dashboard}" class="btn" style="color: var(--text);">Back to Dashboard</a>
+    </nav>
+
+    <div class="booking-container">
+        <h2 class="serif" style="margin-bottom: 2rem; color: var(--primary);">Complete Your Reservation</h2>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <div class="room-summary">
+            <div>
+                <h3 class="serif" th:text="${reservasi.kamar.tipe + ' Room'}">Standard Room</h3>
+                <p style="margin: 5px 0;">Room Number: <span th:text="${reservasi.kamar.nomorKamar}"
+                        style="font-weight: 600;">101</span></p>
+                <div class="price" style="color: var(--accent); font-weight: 700; font-size: 1.2rem;">
+                    Rp <span
+                        th:text="${#numbers.formatDecimal(reservasi.kamar.harga, 0, 'POINT', 0, 'COMMA')}">300,000</span>
+                    / night
+                </div>
+            </div>
+        </div>
+
+        <form th:action="@{/reservasi/simpan}" th:object="${reservasi}" method="post">
+            <input type="hidden" th:field="*{kamar.id}">
+
+            <div class="form-group">
+                <label>Guest Name</label>
+                <input type="text" th:field="*{namaPemesan}" placeholder="Enter guest name" required
+                    class="form-control"
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Check-in Date</label>
+                    <input type="date" th:field="*{checkIn}" required class="form-control"
+                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div class="form-group">
+                    <label>Check-out Date</label>
+                    <input type="date" th:field="*{checkOut}" required class="form-control"
+                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Special Requests / Bed Preference</label>
+                <select th:field="*{tipeKasur}" class="form-control"
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    <option value="King Bed">King Bed</option>
+                    <option value="Twin Bed">Twin Bed</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+                <input type="checkbox" th:field="*{sarapan}" id="breakfast">
+                <label for="breakfast" style="margin: 0;">Include Breakfast (+ Rp 100.000)</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 30px; padding: 15px;">Confirm
+                Booking</button>
+        </form>
+    </div>
+
+</body>
+
+</html>
