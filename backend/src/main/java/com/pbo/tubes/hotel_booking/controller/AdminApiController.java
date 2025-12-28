@@ -154,7 +154,8 @@ public class AdminApiController {
         // Use BookingService instead of ReservasiService
         List<Booking> bookings = bookingService.getAllBookings();
         long totalReservasi = bookings.size(); // Or filter by status 'Paid'/'Pending' if needed
-        long totalPelanggan = userRepository.findByRole("PELANGGAN").size();
+        // long totalPelanggan = userRepository.findByRole("PELANGGAN").size();
+        long totalPelanggan = 0; // Temporarily disabled due to Repository error
 
         // Calculate Revenue from Payments
         // Calculate Revenue from Payments (Safe Mode)
