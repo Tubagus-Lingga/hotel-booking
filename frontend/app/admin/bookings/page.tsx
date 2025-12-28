@@ -1,0 +1,242 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
+import { Search, Calendar, User, CheckCircle, Clock } from 'lucide-react';
+
+interface Booking {
+    bookingID: string;
+    namaPemesan: string; // Or Customer object, depending on API response. Let's check Booking model.
+    customer?: {
+        nama: string;
+        username: string;
+    };
+    tanggalCheckIn: string; // Date
+    tanggalCheckOut: string; // Date
+    statusPembayaran: string;
+    kamar?: {
+        id: number;
+        nomorKamar: string;
+        tipe: string;
+    };
+}
+
+interface Kamar {
+    id: number;
+    nomorKamar: string;
+    tipe: string;
+    statusKamar: string;
+}
+
+export default function BookingsPage() {
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [rooms, setRooms] = useState<Kamar[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Modal State
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+
+    useEffect(() => {
+        fetchBookings();
+        fetchRooms();
+    }, []);
+
+    const fetchBookings = () => {
+        api.get('/admin/bookings')
+            .then(res => {
+                setBookings(res.data);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error("Error fetching bookings:", err);
+                setIsLoading(false);
+            });
+    };
+
+    const fetchRooms = () => {
+        api.get('/admin/kamar')
+            .then(res => {
+                setRooms(res.data);
+            })
+            .catch(err => console.error(err));
+    };
+
+    const handleAssignRoom = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedBooking || !selectedRoomId) return;
+
+        api.put(`/admin/bookings/${selectedBooking.bookingID}/assign-room/${selectedRoomId}`)
+            .then(() => {
+                setIsAssignModalOpen(false);
+                fetchBookings(); // Refresh list
+                fetchRooms(); // Refresh room status
+                alert('Room assigned successfully!');
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Failed to assign room');
+            });
+    };
+
+    const openAssignModal = (booking: Booking) => {
+        setSelectedBooking(booking);
+        // If booking already has room, pre-select it
+        if (booking.kamar) {
+            setSelectedRoomId(booking.kamar.id);
+        } else {
+            setSelectedRoomId(null);
+        }
+        setIsAssignModalOpen(true);
+    };
+
+    const filteredBookings = bookings.filter(b =>
+        b.bookingID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.customer?.nama || 'Guest').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Get available rooms + the room currently assigned to this booking (if any)
+    const availableRooms = rooms.filter(r =>
+        r.statusKamar === 'Available' || (selectedBooking?.kamar && r.id === selectedBooking.kamar.id)
+    );
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-2xl font-serif text-[var(--color-dark-900)]">Booking Management</h1>
+                    <p className="text-gray-500 text-sm">View bookings and assign rooms</p>
+                </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex items-center gap-3">
+                <Search className="text-gray-400" size={20} />
+                <input
+                    type="text"
+                    placeholder="Search by Booking ID or Customer Name..."
+                    className="flex-1 outline-none text-gray-700"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-gray-50 border-b">
+                        <tr>
+                            <th className="px-6 py-4 font-medium text-gray-500">Booking ID</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">Customer</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">Dates</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">Status</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">Assigned Room</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {isLoading ? (
+                            <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-400">Loading bookings...</td></tr>
+                        ) : filteredBookings.length === 0 ? (
+                            <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-400">No bookings found.</td></tr>
+                        ) : (
+                            filteredBookings.map((booking) => (
+                                <tr key={booking.bookingID} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4 font-medium text-[var(--color-dark-900)]">
+                                        #{booking.bookingID}
+                                    </td>
+                                    <td className="px-6 py-4 flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                            <User size={16} />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-800">{booking.namaPemesan || booking.customer?.nama || 'Guest'}</p>
+                                            <p className="text-xs text-gray-500">{booking.customer?.nama ? `Account: ${booking.customer.nama}` : '-'}</p>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-600 text-sm">
+                                        <div className="flex items-center gap-1.5"><Calendar size={14} /> {new Date(booking.tanggalCheckIn).toLocaleDateString()}</div>
+                                        <div className="flex items-center gap-1.5 mt-1"><Clock size={14} /> {new Date(booking.tanggalCheckOut).toLocaleDateString()}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${booking.statusPembayaran === 'Completed' || booking.statusPembayaran === 'Paid'
+                                            ? 'bg-green-50 text-green-700 border-green-100'
+                                            : 'bg-yellow-50 text-yellow-700 border-yellow-100'
+                                            }`}>
+                                            {booking.statusPembayaran || 'Pending'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {booking.kamar ? (
+                                            <div>
+                                                <p className="font-bold text-[var(--color-dark-900)]">Room {booking.kamar.nomorKamar}</p>
+                                                <p className="text-xs text-gray-500">{booking.kamar.tipe}</p>
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 italic text-sm">Not Assigned</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <button
+                                            onClick={() => openAssignModal(booking)}
+                                            className="text-sm bg-[var(--color-dark-900)] text-white px-3 py-1.5 rounded-md hover:bg-black transition-colors"
+                                        >
+                                            {booking.kamar ? 'Change Room' : 'Assign Room'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Assign Room Modal */}
+            {isAssignModalOpen && selectedBooking && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+                        <h3 className="text-lg font-serif font-medium mb-4">Assign Room for #{selectedBooking.bookingID}</h3>
+
+                        <form onSubmit={handleAssignRoom}>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Room</label>
+                                <select
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-gold-400)] outline-none"
+                                    value={selectedRoomId || ''}
+                                    onChange={(e) => setSelectedRoomId(Number(e.target.value))}
+                                >
+                                    <option value="">-- Select Room --</option>
+                                    {availableRooms.map(room => (
+                                        <option key={room.id} value={room.id}>
+                                            {room.nomorKamar} - {room.tipe} ({room.statusKamar})
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-2">Only "Available" rooms are shown.</p>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAssignModalOpen(false)}
+                                    className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={!selectedRoomId}
+                                    className="px-4 py-2 bg-[var(--color-dark-900)] text-white rounded-lg hover:bg-black disabled:opacity-50"
+                                >
+                                    Confirm Assignment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

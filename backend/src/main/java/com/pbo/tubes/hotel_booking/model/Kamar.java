@@ -18,6 +18,9 @@ public class Kamar {
     @Column(columnDefinition = "TEXT")
     private String fasilitasTambahan; // Comma-separated facilities
 
+    @Column(columnDefinition = "TEXT")
+    private String gambar; // URL or path to image
+
     // ===== GETTER & SETTER =====
     public Long getId() {
         return id;
@@ -66,5 +69,13 @@ public class Kamar {
 
     public void setFasilitasTambahan(String fasilitasTambahan) {
         this.fasilitasTambahan = fasilitasTambahan;
+    }
+
+    public String getGambar() {
+        return gambar;
+    }
+
+    public void setGambar(String gambar) {
+        this.gambar = gambar;
     }
 }

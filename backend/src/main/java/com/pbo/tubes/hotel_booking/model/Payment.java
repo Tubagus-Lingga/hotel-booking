@@ -16,6 +16,7 @@ public class Payment {
     private String metodePembayaran;
     private Double totalPembayaran;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToOne
     @JoinColumn(name = "bookingID")
     private Booking booking;

@@ -1,9 +1,11 @@
 package com.pbo.tubes.hotel_booking.controller;
 
+import com.pbo.tubes.hotel_booking.model.Booking;
 import com.pbo.tubes.hotel_booking.model.Kamar;
 import com.pbo.tubes.hotel_booking.model.Reservasi;
 import com.pbo.tubes.hotel_booking.model.User;
 import com.pbo.tubes.hotel_booking.repository.UserRepository;
+import com.pbo.tubes.hotel_booking.service.BookingService;
 import com.pbo.tubes.hotel_booking.service.KamarService;
 import com.pbo.tubes.hotel_booking.service.ReservasiService;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +23,14 @@ public class AdminApiController {
     private final KamarService kamarService;
     private final ReservasiService reservasiService;
     private final UserRepository userRepository;
+    private final BookingService bookingService;
 
     public AdminApiController(KamarService kamarService, ReservasiService reservasiService,
-            UserRepository userRepository) {
+            UserRepository userRepository, BookingService bookingService) {
         this.kamarService = kamarService;
         this.reservasiService = reservasiService;
         this.userRepository = userRepository;
+        this.bookingService = bookingService;
     }
 
     // ================= KAMAR (ROOMS) =================
@@ -56,6 +60,7 @@ public class AdminApiController {
         kamar.setHarga(kamarDetails.getHarga());
         kamar.setStatusKamar(kamarDetails.getStatusKamar());
         kamar.setFasilitasTambahan(kamarDetails.getFasilitasTambahan());
+        kamar.setGambar(kamarDetails.getGambar());
 
         kamarService.save(kamar);
         return ResponseEntity.ok(kamar);
@@ -71,9 +76,24 @@ public class AdminApiController {
 
     // ================= RESERVASI (BOOKINGS) =================
 
+    // ================= RESERVASI (BOOKINGS) =================
+
     @GetMapping("/reservasi")
     public ResponseEntity<List<Reservasi>> getAllReservasi() {
         return ResponseEntity.ok(reservasiService.getAllReservasi());
+    }
+
+    // ================= REAL BOOKINGS (NEW) =================
+
+    @GetMapping("/bookings")
+    public ResponseEntity<List<Booking>> getAllBookings() {
+        return ResponseEntity.ok(bookingService.getAllBookings());
+    }
+
+    @PutMapping("/bookings/{bookingId}/assign-room/{kamarId}")
+    public ResponseEntity<Booking> assignRoom(@PathVariable String bookingId, @PathVariable Long kamarId) {
+        Booking updatedBooking = bookingService.assignRoom(bookingId, kamarId);
+        return ResponseEntity.ok(updatedBooking);
     }
 
     // ================= CUSTOMERS (USERS) =================
@@ -86,18 +106,68 @@ public class AdminApiController {
 
     // ================= DASHBOARD STATS =================
 
+    // ================= UPLOAD IMAGE =================
+
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, String>> uploadImage(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                throw new RuntimeException("Empty file");
+            }
+
+            // Create uploads directory if not exists
+            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads");
+            if (!java.nio.file.Files.exists(uploadDir)) {
+                java.nio.file.Files.createDirectories(uploadDir);
+            }
+
+            // Generate filename unique
+            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            java.nio.file.Path targetLocation = uploadDir.resolve(filename);
+
+            // Copy file
+            java.nio.file.Files.copy(file.getInputStream(), targetLocation,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            // Construct URL
+            String fileUrl = "http://localhost:8081/uploads/" + filename;
+
+            Map<String, String> response = new HashMap<>();
+            response.put("url", fileUrl);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to store file " + e.getMessage());
+        }
+    }
+
+    // ================= DASHBOARD STATS =================
+
     @GetMapping("/dashboard-stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
 
         long totalKamar = kamarService.getAllKamar().size();
-        long totalReservasi = reservasiService.getAllReservasi().size();
+
+        // Use BookingService instead of ReservasiService
+        List<Booking> bookings = bookingService.getAllBookings();
+        long totalReservasi = bookings.size(); // Or filter by status 'Paid'/'Pending' if needed
         long totalPelanggan = userRepository.findByRole("PELANGGAN").size();
 
-        // Simple Revenue Calculation
-        double totalRevenue = reservasiService.getAllReservasi().stream()
-                .mapToDouble(r -> r.getKamar().getHarga()) // Assuming 1 night for simplicity, or we can improve logic
-                .sum();
+        // Calculate Revenue from Payments
+        // Calculate Revenue from Payments (Safe Mode)
+        double totalRevenue = 0;
+        try {
+            totalRevenue = bookings.stream()
+                    .filter(b -> b.getPayment() != null)
+                    .mapToDouble(b -> b.getPayment().getTotalPembayaran() != null ? b.getPayment().getTotalPembayaran()
+                            : 0.0)
+                    .sum();
+        } catch (Exception e) {
+            System.err.println("Error calculating revenue: " + e.getMessage());
+        }
 
         stats.put("totalKamar", totalKamar);
         stats.put("totalReservasi", totalReservasi);

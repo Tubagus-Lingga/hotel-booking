@@ -20,6 +20,7 @@ public class Customer {
     @JoinColumn(name = "userID")
     private User user;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
