@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<h2>Reservasi Kamar</h2>
+
+<p th:if="${error}" style="color:red" th:text="${error}"></p>
+
+<form th:action="@{/reservasi/simpan}" th:object="${reservasi}" method="post">
+
+    <input type="hidden" th:field="*{kamar.id}"/>
+
+    Nama:
+    <input type="text" th:field="*{namaPemesan}" required><br><br>
+
+    Check-in:
+    <input type="date" th:field="*{checkIn}" required><br><br>
+
+    Check-out:
+    <input type="date" th:field="*{checkOut}" required><br><br>
+
+    <button type="submit">Pesan</button>
+</form>
+
+</body>
+</html>
