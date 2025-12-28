@@ -24,13 +24,16 @@ public class AdminApiController {
     private final ReservasiService reservasiService;
     private final UserRepository userRepository;
     private final BookingService bookingService;
+    private final com.pbo.tubes.hotel_booking.repository.BookingRepository bookingRepository;
 
     public AdminApiController(KamarService kamarService, ReservasiService reservasiService,
-            UserRepository userRepository, BookingService bookingService) {
+            UserRepository userRepository, BookingService bookingService,
+            com.pbo.tubes.hotel_booking.repository.BookingRepository bookingRepository) {
         this.kamarService = kamarService;
         this.reservasiService = reservasiService;
         this.userRepository = userRepository;
         this.bookingService = bookingService;
+        this.bookingRepository = bookingRepository;
     }
 
     // ================= KAMAR (ROOMS) =================
@@ -96,6 +99,20 @@ public class AdminApiController {
         return ResponseEntity.ok(updatedBooking);
     }
 
+    @PutMapping("/bookings/{bookingId}/update-dates")
+    public ResponseEntity<Booking> updateBookingDates(@PathVariable String bookingId,
+            @RequestBody Map<String, String> dates) {
+        try {
+            String checkIn = dates.get("checkIn");
+            String checkOut = dates.get("checkOut");
+
+            Booking updatedBooking = bookingService.updateBookingDates(bookingId, checkIn, checkOut);
+            return ResponseEntity.ok(updatedBooking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // ================= CUSTOMERS (USERS) =================
 
     @GetMapping("/users")
@@ -144,6 +161,44 @@ public class AdminApiController {
     }
 
     // ================= DASHBOARD STATS =================
+
+    @PostMapping("/fix-payment-amounts")
+    public ResponseEntity<Map<String, Object>> fixPaymentAmounts() {
+        Map<String, Object> result = new HashMap<>();
+        int fixed = 0;
+
+        try {
+            List<Booking> bookings = bookingService.getAllBookings();
+
+            for (Booking booking : bookings) {
+                if (booking.getPayment() != null && booking.getKamar() != null) {
+                    // Calculate correct amount based on room price and stay duration
+                    long checkIn = booking.getTanggalCheckIn().getTime();
+                    long checkOut = booking.getTanggalCheckOut().getTime();
+                    long days = (checkOut - checkIn) / (1000 * 60 * 60 * 24);
+
+                    double correctAmount = booking.getKamar().getHarga() * days;
+                    double currentAmount = booking.getPayment().getTotalPembayaran();
+
+                    // Only update if amounts don't match
+                    if (Math.abs(correctAmount - currentAmount) > 0.01) {
+                        booking.getPayment().setTotalPembayaran(correctAmount);
+                        bookingRepository.save(booking);
+                        fixed++;
+                    }
+                }
+            }
+
+            result.put("success", true);
+            result.put("fixed", fixed);
+            result.put("message", "Fixed " + fixed + " payment amounts");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            return ResponseEntity.status(500).body(result);
+        }
+    }
 
     @GetMapping("/dashboard-stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {

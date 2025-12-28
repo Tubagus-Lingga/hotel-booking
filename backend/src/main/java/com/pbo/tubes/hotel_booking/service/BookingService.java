@@ -192,4 +192,30 @@ public class BookingService {
 
         return bookingRepository.save(booking);
     }
+
+    public Booking updateBookingDates(String bookingId, String checkInStr, String checkOutStr) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        try {
+            // Parse new dates
+            java.sql.Date newCheckIn = java.sql.Date.valueOf(checkInStr);
+            java.sql.Date newCheckOut = java.sql.Date.valueOf(checkOutStr);
+
+            // Update booking dates
+            booking.setTanggalCheckIn(newCheckIn);
+            booking.setTanggalCheckOut(newCheckOut);
+
+            // Recalculate payment if payment exists
+            if (booking.getPayment() != null && booking.getKamar() != null) {
+                long days = (newCheckOut.getTime() - newCheckIn.getTime()) / (1000 * 60 * 60 * 24);
+                double newAmount = booking.getKamar().getHarga() * days;
+                booking.getPayment().setTotalPembayaran(newAmount);
+            }
+
+            return bookingRepository.save(booking);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid date format. Use YYYY-MM-DD");
+        }
+    }
 }

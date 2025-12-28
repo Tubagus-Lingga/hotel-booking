@@ -28,6 +28,7 @@ function QRISContent() {
             // Simulate payment verification call
             // In real world, this endpoint might check gateway status.
             // Here we just mark it as paid.
+            console.log('Sending payment with amount:', amount);
             await api.put(`/customer/booking/${bookingId}/pay`, {
                 amount: amount,
                 method: 'QRIS'

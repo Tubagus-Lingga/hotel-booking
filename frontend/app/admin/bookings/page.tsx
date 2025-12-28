@@ -19,6 +19,11 @@ interface Booking {
         nomorKamar: string;
         tipe: string;
     };
+    payment?: {
+        paymentID: string;
+        totalPembayaran: number;
+        metodePembayaran: string;
+    };
 }
 
 interface Kamar {
@@ -38,6 +43,11 @@ export default function BookingsPage() {
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+
+    // Edit Dates Modal State
+    const [isEditDatesModalOpen, setIsEditDatesModalOpen] = useState(false);
+    const [newCheckIn, setNewCheckIn] = useState('');
+    const [newCheckOut, setNewCheckOut] = useState('');
 
     useEffect(() => {
         fetchBookings();
@@ -92,9 +102,36 @@ export default function BookingsPage() {
         setIsAssignModalOpen(true);
     };
 
+    const openEditDatesModal = (booking: Booking) => {
+        setSelectedBooking(booking);
+        setNewCheckIn(booking.tanggalCheckIn);
+        setNewCheckOut(booking.tanggalCheckOut);
+        setIsEditDatesModalOpen(true);
+    };
+
+    const handleUpdateDates = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedBooking) return;
+
+        api.put(`/admin/bookings/${selectedBooking.bookingID}/update-dates`, {
+            checkIn: newCheckIn,
+            checkOut: newCheckOut
+        })
+            .then(() => {
+                setIsEditDatesModalOpen(false);
+                fetchBookings();
+                alert('Booking dates updated successfully!');
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Failed to update dates');
+            });
+    };
+
     const filteredBookings = bookings.filter(b =>
         b.bookingID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (b.customer?.nama || 'Guest').toLowerCase().includes(searchTerm.toLowerCase())
+        (b.namaPemesan || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.customer?.nama || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Get available rooms + the room currently assigned to this booking (if any)
@@ -131,6 +168,7 @@ export default function BookingsPage() {
                             <th className="px-6 py-4 font-medium text-gray-500">Booking ID</th>
                             <th className="px-6 py-4 font-medium text-gray-500">Customer</th>
                             <th className="px-6 py-4 font-medium text-gray-500">Dates</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">Total Price</th>
                             <th className="px-6 py-4 font-medium text-gray-500">Status</th>
                             <th className="px-6 py-4 font-medium text-gray-500">Assigned Room</th>
                             <th className="px-6 py-4 font-medium text-gray-500">Action</th>
@@ -138,9 +176,9 @@ export default function BookingsPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {isLoading ? (
-                            <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-400">Loading bookings...</td></tr>
+                            <tr><td colSpan={8} className="px-6 py-8 text-center text-gray-400">Loading bookings...</td></tr>
                         ) : filteredBookings.length === 0 ? (
-                            <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-400">No bookings found.</td></tr>
+                            <tr><td colSpan={8} className="px-6 py-8 text-center text-gray-400">No bookings found.</td></tr>
                         ) : (
                             filteredBookings.map((booking) => (
                                 <tr key={booking.bookingID} className="hover:bg-gray-50 transition-colors">
@@ -161,6 +199,17 @@ export default function BookingsPage() {
                                         <div className="flex items-center gap-1.5 mt-1"><Clock size={14} /> {new Date(booking.tanggalCheckOut).toLocaleDateString()}</div>
                                     </td>
                                     <td className="px-6 py-4">
+                                        {booking.payment ? (
+                                            <div>
+                                                <p className="font-bold text-[var(--color-gold-600)] text-lg">
+                                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(booking.payment.totalPembayaran)}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 italic text-sm">No Payment</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${booking.statusPembayaran === 'Completed' || booking.statusPembayaran === 'Paid'
                                             ? 'bg-green-50 text-green-700 border-green-100'
                                             : 'bg-yellow-50 text-yellow-700 border-yellow-100'
@@ -179,12 +228,20 @@ export default function BookingsPage() {
                                         )}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => openAssignModal(booking)}
-                                            className="text-sm bg-[var(--color-dark-900)] text-white px-3 py-1.5 rounded-md hover:bg-black transition-colors"
-                                        >
-                                            {booking.kamar ? 'Change Room' : 'Assign Room'}
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => openEditDatesModal(booking)}
+                                                className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors"
+                                            >
+                                                Edit Dates
+                                            </button>
+                                            <button
+                                                onClick={() => openAssignModal(booking)}
+                                                className="text-sm bg-[var(--color-dark-900)] text-white px-3 py-1.5 rounded-md hover:bg-black transition-colors"
+                                            >
+                                                {booking.kamar ? 'Change Room' : 'Assign Room'}
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -231,6 +288,59 @@ export default function BookingsPage() {
                                     className="px-4 py-2 bg-[var(--color-dark-900)] text-white rounded-lg hover:bg-black disabled:opacity-50"
                                 >
                                     Confirm Assignment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Dates Modal */}
+            {isEditDatesModalOpen && selectedBooking && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+                        <h3 className="text-lg font-serif font-medium mb-4">Edit Dates for #{selectedBooking.bookingID}</h3>
+
+                        <form onSubmit={handleUpdateDates}>
+                            <div className="space-y-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Check-In Date</label>
+                                    <input
+                                        type="date"
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                                        value={newCheckIn}
+                                        onChange={(e) => setNewCheckIn(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Check-Out Date</label>
+                                    <input
+                                        type="date"
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                                        value={newCheckOut}
+                                        onChange={(e) => setNewCheckOut(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 bg-blue-50 p-3 rounded">
+                                    ℹ️ Payment amount will be automatically recalculated based on new dates.
+                                </p>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditDatesModalOpen(false)}
+                                    className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                >
+                                    Update Dates
                                 </button>
                             </div>
                         </form>
