@@ -1,4 +1,4 @@
-# Hotel Booking System - Kanzler
+# Hotel Booking System Kanzler
 
 Sistem manajemen hotel booking dengan fitur admin panel dan customer booking flow.
 
