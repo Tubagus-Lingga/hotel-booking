@@ -17,10 +17,12 @@ public class RegisterController {
 
     private final UserService userService;
     private final CustomerService customerService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public RegisterController(UserService userService, CustomerService customerService) {
+    public RegisterController(UserService userService, CustomerService customerService, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.customerService = customerService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/register")
@@ -48,7 +50,7 @@ public class RegisterController {
         User user = new User();
         user.setEmail(email);
         user.setUsername(email); // Use email as username
-        user.setPassword(password); // TODO: Add password hashing with BCrypt
+        user.setPassword(passwordEncoder.encode(password)); // Hash password
         user.setRole(Role.PELANGGAN);
 
         User savedUser = userService.save(user);

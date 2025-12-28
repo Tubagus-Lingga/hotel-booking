@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard Pelanggan</title>
+</head>
+<body>
+
+<h2>Dashboard Pelanggan</h2>
+
+<ul>
+    <li>
+        <a th:href="@{/kamar}">
+            Lihat Kamar Tersedia
+        </a>
+    </li>
+
+    <li>
+        <a th:href="@{/reservasi/saya}">
+            Reservasi Saya
+        </a>
+    </li>
+
+    <li>
+        <a th:href="@{/login}">
+            Logout
+        </a>
+    </li>
+</ul>
+
+</body>
+</html>

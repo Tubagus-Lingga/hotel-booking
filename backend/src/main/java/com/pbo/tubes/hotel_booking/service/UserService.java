@@ -11,16 +11,20 @@ import com.pbo.tubes.hotel_booking.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Login with username
     public Optional<User> login(String username, String password) {
         Optional<User> userOpt = userRepository.findByUsername(username);
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
-            return userOpt;
+        if (userOpt.isPresent()) {
+            if (passwordEncoder.matches(password, userOpt.get().getPassword())) {
+                return userOpt;
+            }
         }
         return Optional.empty();
     }
@@ -31,15 +35,24 @@ public class UserService {
         Optional<User> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            String storedPassword = user.getPassword();
             System.out.println("DEBUG: User found in database.");
-            String storedPassword = userOpt.get().getPassword();
-            System.out.println("DEBUG: Input Password: '" + password + "'");
-            System.out.println("DEBUG: Stored Password: '" + storedPassword + "'");
 
-            if (storedPassword.equals(password)) {
-                System.out.println("DEBUG: Password MATCH!");
+            // 1. Cek apakah password match dengan BCrypt hash
+            if (passwordEncoder.matches(password, storedPassword)) {
+                System.out.println("DEBUG: Password MATCH (Hash)!");
                 return userOpt;
-            } else {
+            } 
+            // 2. Jika gagal check hash, coba cek plain text (Migration Support)
+            else if (storedPassword.equals(password)) {
+                 System.out.println("DEBUG: Password MATCH (Plain Text) - Migrating to Hash...");
+                 // Update password ke hash
+                 user.setPassword(passwordEncoder.encode(password));
+                 userRepository.save(user); // Simpan hash baru
+                 return userOpt;
+            }
+            else {
                 System.out.println("DEBUG: Password MISMATCH!");
             }
         } else {
