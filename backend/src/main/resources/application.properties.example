@@ -1,7 +1,8 @@
 # Database Configuration
 spring.datasource.url=jdbc:mysql://localhost:3306/hotel_booking
 spring.datasource.username=root
-spring.datasource.password=YOUR_MYSQL_PASSWORD_HERE
+# If MySQL has no password, leave it empty (just empty string)
+spring.datasource.password=
 
 # JPA/Hibernate
 spring.jpa.hibernate.ddl-auto=update
