@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { BedDouble, Users, CreditCard, TrendingUp } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -14,7 +14,8 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         // Fetch stats from our new API
-        axios.get('http://localhost:8081/api/admin/dashboard-stats')
+        // Fetch stats from our new API
+        api.get('/admin/dashboard-stats')
             .then(res => setStats(res.data))
             .catch(err => console.error("Failed to fetch stats", err));
     }, []);
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
                 <p className="text-gray-500 mt-1">Here is what's happening with your hotel today.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <StatCard
                     title="Total Rooms"
                     value={stats.totalKamar}
@@ -37,11 +38,7 @@ export default function AdminDashboard() {
                     value={stats.totalReservasi}
                     icon={<CreditCard className="text-blue-500" size={24} />}
                 />
-                <StatCard
-                    title="Total Customers"
-                    value={stats.totalPelanggan}
-                    icon={<Users className="text-green-500" size={24} />}
-                />
+
                 <StatCard
                     title="Total Revenue"
                     value={`Rp ${stats.totalRevenue.toLocaleString()}`}

@@ -16,6 +16,7 @@ public class Invoice {
     @Column(columnDefinition = "TEXT")
     private String detailPembayaran;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToOne
     @JoinColumn(name = "bookingID")
     private Booking booking;

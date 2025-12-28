@@ -17,6 +17,15 @@ public class Booking {
     private Date tanggalCheckOut;
 
     private String statusPembayaran;
+    private String namaPemesan;
+
+    @Temporal(TemporalType.DATE)
+    private Date tanggalLahir;
+
+    private String gender;
+    private String tipeKasur;
+    private boolean sarapan;
+    private String catatan;
 
     @ManyToOne
     @JoinColumn(name = "customerID")
@@ -74,6 +83,54 @@ public class Booking {
 
     public void setStatusPembayaran(String statusPembayaran) {
         this.statusPembayaran = statusPembayaran;
+    }
+
+    public String getNamaPemesan() {
+        return namaPemesan;
+    }
+
+    public void setNamaPemesan(String namaPemesan) {
+        this.namaPemesan = namaPemesan;
+    }
+
+    public Date getTanggalLahir() {
+        return tanggalLahir;
+    }
+
+    public void setTanggalLahir(Date tanggalLahir) {
+        this.tanggalLahir = tanggalLahir;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getTipeKasur() {
+        return tipeKasur;
+    }
+
+    public void setTipeKasur(String tipeKasur) {
+        this.tipeKasur = tipeKasur;
+    }
+
+    public boolean isSarapan() {
+        return sarapan;
+    }
+
+    public void setSarapan(boolean sarapan) {
+        this.sarapan = sarapan;
+    }
+
+    public String getCatatan() {
+        return catatan;
+    }
+
+    public void setCatatan(String catatan) {
+        this.catatan = catatan;
     }
 
     public Customer getCustomer() {

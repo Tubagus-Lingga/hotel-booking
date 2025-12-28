@@ -27,9 +27,23 @@ public class UserService {
 
     // Login with email
     public Optional<User> loginByEmail(String email, String password) {
+        System.out.println("DEBUG: Attempting login for email: " + email);
         Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
-            return userOpt;
+
+        if (userOpt.isPresent()) {
+            System.out.println("DEBUG: User found in database.");
+            String storedPassword = userOpt.get().getPassword();
+            System.out.println("DEBUG: Input Password: '" + password + "'");
+            System.out.println("DEBUG: Stored Password: '" + storedPassword + "'");
+
+            if (storedPassword.equals(password)) {
+                System.out.println("DEBUG: Password MATCH!");
+                return userOpt;
+            } else {
+                System.out.println("DEBUG: Password MISMATCH!");
+            }
+        } else {
+            System.out.println("DEBUG: User NOT found in database.");
         }
         return Optional.empty();
     }

@@ -38,8 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <nav className="flex-1 p-4 space-y-2">
                     <NavItem href="/admin" icon={<LayoutDashboard size={20} />} label="Dashboard" />
                     <NavItem href="/admin/rooms" icon={<BedDouble size={20} />} label="Room Management" />
-                    <NavItem href="/admin/customers" icon={<Users size={20} />} label="Customer Data" />
-                    <NavItem href="/admin/reports" icon={<FileBarChart size={20} />} label="Reports" />
+                    <NavItem href="/admin/bookings" icon={<FileBarChart size={20} />} label="Bookings" />
                 </nav>
 
                 <div className="p-4 border-t border-gray-800 space-y-2">

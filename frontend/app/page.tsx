@@ -2,10 +2,58 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Star, ArrowRight, Wifi, Coffee, MapPin, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
+import { ArrowRight, User, Image as ImageIcon, ShoppingBag } from 'lucide-react';
+
+interface Kamar {
+  id: number;
+  nomorKamar: string;
+  tipe: string;
+  harga: number;
+  gambar: string;
+  fasilitasTambahan: string;
+  statusKamar: string;
+}
 
 export default function Home() {
   const router = useRouter();
+  const [rooms, setRooms] = useState<Kamar[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [role, setRole] = useState('');
+
+  useEffect(() => {
+    // Check login status
+    const user = localStorage.getItem('user');
+    const storedRole = localStorage.getItem('role');
+    if (user) {
+      setIsLoggedIn(true);
+      if (storedRole) setRole(storedRole);
+    }
+
+    api.get('/public/kamar')
+      .then(res => {
+        const allRooms = res.data || [];
+        const available = allRooms.filter((r: Kamar) => r.statusKamar === 'Available');
+
+        // Group unique types
+        const uniqueTypes = new Map();
+        available.forEach((room: Kamar) => {
+          if (!uniqueTypes.has(room.tipe)) {
+            uniqueTypes.set(room.tipe, room);
+          }
+        });
+
+        setRooms(Array.from(uniqueTypes.values()));
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching public rooms:", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const handleBookNow = () => {
     const user = localStorage.getItem('user');
@@ -30,9 +78,50 @@ export default function Home() {
           <button onClick={handleBookNow} className="bg-[var(--color-gold-500)] text-black px-6 py-2 rounded-none uppercase text-xs font-bold tracking-widest hover:bg-white transition-colors cursor-pointer">
             Book Now
           </button>
-          <Link href="/login" className="text-white hover:text-[var(--color-gold-400)] transition">
-            <User size={24} />
+          <Link href="/cart" className="text-white hover:text-[var(--color-gold-400)] transition">
+            <ShoppingBag size={24} />
           </Link>
+          {isLoggedIn ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="text-white hover:text-[var(--color-gold-400)] transition flex items-center gap-2 focus:outline-none"
+              >
+                <User size={24} />
+                <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">Account</span>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showDropdown && (
+                <div className="absolute right-0 mt-4 w-48 bg-white rounded shadow-xl overflow-hidden text-black py-2 origin-top-right z-50 animate-fade-in-down">
+                  {role === 'ADMIN' && (
+                    <Link
+                      href="/admin"
+                      className="block px-4 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 font-medium text-[var(--color-dark-900)]"
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('user');
+                      localStorage.removeItem('role');
+                      setIsLoggedIn(false);
+                      setShowDropdown(false);
+                      router.refresh();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" className="text-white hover:text-[var(--color-gold-400)] transition">
+              <User size={24} />
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -92,47 +181,56 @@ export default function Home() {
           <h2 className="text-4xl font-serif text-[var(--color-dark-800)] mt-2">Your Private Sanctuary</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto font-sans">
-
-          {/* Standard Room Card */}
-          <div className="group cursor-default">
-            <div className="h-[400px] overflow-hidden relative">
-              <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80" alt="Standard Room" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-            </div>
-            <div className="pt-8 text-center bg-white relative -mt-16 mx-8 shadow-xl p-6">
-              <h3 className="text-2xl font-serif text-[var(--color-dark-900)] mb-2">Urban Comfort</h3>
-              <p className="text-gray-500 text-sm mb-4">Standard Room</p>
-              <div className="flex justify-center gap-4 text-xs text-gray-400 mb-6 uppercase tracking-wider">
-                <span>Queen Bed</span> • <span>City View</span> • <span>2 Guests</span>
-              </div>
-              <p className="text-[var(--color-gold-600)] font-bold text-lg mb-6">Starts from Rp 459.000</p>
-              <button onClick={handleBookNow} className="border-b border-black pb-1 uppercase text-xs tracking-[0.2em] hover:text-[var(--color-gold-600)] hover:border-[var(--color-gold-600)] transition-all cursor-pointer">
-                Book This Room
-              </button>
-            </div>
+        {isLoading ? (
+          <div className="text-center py-12 text-gray-400">Loading available rooms...</div>
+        ) : rooms.length === 0 ? (
+          <div className="text-center py-12 text-gray-500 italic">
+            <p>No rooms available at the moment.</p>
+            <p className="text-sm mt-2">Please check back later or contact us directly.</p>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-12 max-w-5xl mx-auto font-sans">
+            {rooms.map((room) => (
+              <div key={room.id} className="group cursor-default">
+                <div className="h-[400px] overflow-hidden relative bg-gray-100 flex items-center justify-center">
+                  {room.gambar ? (
+                    <img src={room.gambar} alt={room.tipe} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  ) : (
+                    <div className="text-gray-300 flex flex-col items-center">
+                      <ImageIcon size={48} />
+                      <span className="text-sm mt-2">No Image</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+                  {/* Badge Status - Hide for aggregated view or show 'Available' */}
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--color-dark-900)] shadow-sm">
+                    {room.statusKamar}
+                  </div>
+                </div>
+                <div className="pt-8 text-center bg-white relative -mt-16 mx-8 shadow-xl p-6">
+                  <h3 className="text-2xl font-serif text-[var(--color-dark-900)] mb-2">{room.tipe}</h3>
+                  {/* REMOVED ROOM NUMBER HERE */}
 
-          {/* Deluxe Room Card */}
-          <div className="group cursor-default">
-            <div className="h-[400px] overflow-hidden relative">
-              <img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" alt="Deluxe Room" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-            </div>
-            <div className="pt-8 text-center bg-white relative -mt-16 mx-8 shadow-xl p-6">
-              <h3 className="text-2xl font-serif text-[var(--color-dark-900)] mb-2">Executive Deluxe</h3>
-              <p className="text-gray-500 text-sm mb-4">Deluxe Room</p>
-              <div className="flex justify-center gap-4 text-xs text-gray-400 mb-6 uppercase tracking-wider">
-                <span>King Bed</span> • <span>Ocean View</span> • <span>Bathtub</span>
+                  {room.fasilitasTambahan && (
+                    <div className="flex justify-center flex-wrap gap-2 text-xs text-gray-400 mb-6 uppercase tracking-wider max-w-xs mx-auto">
+                      {room.fasilitasTambahan.split(',').map((f, i) => (
+                        <span key={i} className="border px-2 py-0.5 rounded-full">{f.trim()}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-[var(--color-gold-600)] font-bold text-lg mb-6">
+                    Runs from Rp {room.harga.toLocaleString()}
+                  </p>
+
+                  <button onClick={handleBookNow} className="border-b border-black pb-1 uppercase text-xs tracking-[0.2em] hover:text-[var(--color-gold-600)] hover:border-[var(--color-gold-600)] transition-all cursor-pointer">
+                    Book This Room
+                  </button>
+                </div>
               </div>
-              <p className="text-[var(--color-gold-600)] font-bold text-lg mb-6">Starts from Rp 830.000</p>
-              <button onClick={handleBookNow} className="border-b border-black pb-1 uppercase text-xs tracking-[0.2em] hover:text-[var(--color-gold-600)] hover:border-[var(--color-gold-600)] transition-all cursor-pointer">
-                Book This Room
-              </button>
-            </div>
+            ))}
           </div>
-
-        </div>
+        )}
       </div>
 
       <footer className="bg-[var(--color-dark-900)] text-white py-12 text-center">
@@ -158,8 +256,4 @@ function FacilityCard({ image, title, desc }: { image: string, title: string, de
       </div>
     </div>
   )
-}
-
-function CheckIcon() {
-  return <span className="text-[var(--color-gold-500)]">✓</span>
 }
