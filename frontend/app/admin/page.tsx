@@ -12,12 +12,25 @@ export default function AdminDashboard() {
         totalRevenue: 0
     });
 
+    const [recentBookings, setRecentBookings] = useState<any[]>([]);
+
     useEffect(() => {
         // Fetch stats from our new API
         // Fetch stats from our new API
         api.get('/admin/dashboard-stats')
             .then(res => setStats(res.data))
             .catch(err => console.error("Failed to fetch stats", err));
+
+        // Fetch recent bookings
+        api.get('/admin/bookings')
+            .then(res => {
+                // Get 5 most recent bookings
+                const sorted = res.data.sort((a: any, b: any) => {
+                    return new Date(b.tanggalCheckIn).getTime() - new Date(a.tanggalCheckIn).getTime();
+                });
+                setRecentBookings(sorted.slice(0, 5));
+            })
+            .catch(err => console.error("Failed to fetch bookings", err));
     }, []);
 
     return (
@@ -46,12 +59,52 @@ export default function AdminDashboard() {
                 />
             </div>
 
-            {/* Placeholder for Recent Activity */}
+            {/* Recent Bookings */}
             <div className="bg-white rounded-xl shadow-sm border p-6">
                 <h3 className="text-lg font-medium mb-4 text-[var(--color-dark-800)]">Recent Bookings</h3>
-                <div className="h-40 flex items-center justify-center text-gray-400 bg-gray-50 rounded border border-dashed">
-                    Chart or Recent Table will go here in Reports Page
-                </div>
+                {recentBookings.length === 0 ? (
+                    <div className="h-40 flex items-center justify-center text-gray-400 bg-gray-50 rounded border border-dashed">
+                        No recent bookings
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="border-b">
+                                <tr className="text-left text-gray-500">
+                                    <th className="pb-3 font-medium">Booking ID</th>
+                                    <th className="pb-3 font-medium">Customer</th>
+                                    <th className="pb-3 font-medium">Check-In</th>
+                                    <th className="pb-3 font-medium">Room</th>
+                                    <th className="pb-3 font-medium">Total</th>
+                                    <th className="pb-3 font-medium">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {recentBookings.map((booking) => (
+                                    <tr key={booking.bookingID} className="hover:bg-gray-50">
+                                        <td className="py-3 font-medium text-gray-900">#{booking.bookingID.substring(0, 12)}</td>
+                                        <td className="py-3 text-gray-700">{booking.namaPemesan || booking.customer?.nama || 'Guest'}</td>
+                                        <td className="py-3 text-gray-600">{new Date(booking.tanggalCheckIn).toLocaleDateString()}</td>
+                                        <td className="py-3 text-gray-700">
+                                            {booking.kamar ? `Room ${booking.kamar.nomorKamar}` : '-'}
+                                        </td>
+                                        <td className="py-3 font-semibold text-[var(--color-gold-600)]">
+                                            {booking.payment ? `Rp ${booking.payment.totalPembayaran.toLocaleString()}` : '-'}
+                                        </td>
+                                        <td className="py-3">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.statusPembayaran === 'Paid'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-yellow-100 text-yellow-700'
+                                                }`}>
+                                                {booking.statusPembayaran}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     );

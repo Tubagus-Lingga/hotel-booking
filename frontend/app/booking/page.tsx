@@ -31,14 +31,10 @@ export default function BookingPage() {
         const end = new Date(checkOut);
         if (start >= end) return 0;
 
-        let total = 0;
-        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-            const day = d.getDay();
-            // Weekend: Friday (5), Saturday (6), Sunday (0)
-            const isWeekend = day === 5 || day === 6 || day === 0;
-            total += basePrice + (isWeekend ? 200000 : 0);
-        }
-        return total;
+
+        // Flat pricing - no weekend surcharge
+        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        return basePrice * days;
     };
 
     useEffect(() => {
