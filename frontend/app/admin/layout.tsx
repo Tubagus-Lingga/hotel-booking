@@ -20,6 +20,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [router]);
 
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('role');
+        router.push('/login');
+    };
+
     if (!authorized) {
         return null; // Don't show anything while checking
     }
@@ -46,7 +52,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Home size={20} />
                         <span className="font-medium">Back to Website</span>
                     </Link>
-                    <button className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 hover:text-white hover:bg-red-900/20 rounded-lg transition-all duration-300">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 hover:text-white hover:bg-red-900/20 rounded-lg transition-all duration-300"
+                    >
                         <LogOut size={20} />
                         <span className="font-medium">Logout</span>
                     </button>

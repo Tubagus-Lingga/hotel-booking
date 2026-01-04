@@ -102,6 +102,12 @@ export default function Home() {
                       Admin Panel
                     </Link>
                   )}
+                  <Link
+                    href="/history"
+                    className="block px-4 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 font-medium text-[var(--color-dark-900)]"
+                  >
+                    My Bookings
+                  </Link>
                   <button
                     onClick={() => {
                       localStorage.removeItem('user');

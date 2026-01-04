@@ -16,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/customer")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class CustomerApiController {
 
     private final BookingService bookingService;
@@ -47,6 +48,21 @@ public class CustomerApiController {
         }
     }
 
+    // 1.5 Delete Booking (Remove from Cart)
+    @DeleteMapping("/booking/{bookingId}")
+    public ResponseEntity<?> deleteBooking(@PathVariable String bookingId, HttpSession session) {
+        User user = (User) session.getAttribute("loginUser");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+             bookingService.deleteBooking(bookingId);
+             return ResponseEntity.ok(java.util.Collections.singletonMap("message", "Booking deleted"));
+        } catch (Exception e) {
+             return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("message", e.getMessage()));
+        }
+    }
+
     // 2. Get Cart (Pending Bookings)
     @GetMapping("/cart")
     public ResponseEntity<?> getCart(HttpSession session) {
@@ -54,8 +70,33 @@ public class CustomerApiController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        // Return latest pending booking or all
-        return ResponseEntity.ok(bookingService.getLatestPendingBooking(user));
+        // Return ALL pending bookings
+        return ResponseEntity.ok(bookingService.getPendingBookings(user));
+    }
+
+    // 2.5 Get Booking History (Paid/Completed/Cancelled)
+    // DEBUG MODE: Returning ALL bookings to debug user issue
+    @GetMapping("/history")
+    public ResponseEntity<?> getHistory(HttpSession session) {
+        User user = (User) session.getAttribute("loginUser");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        System.out.println("DEBUG: Fetching history for user: " + user.getUsername());
+        
+        java.util.List<Booking> all = bookingService.getBookingsByUser(user);
+        
+        System.out.println("DEBUG: Found " + all.size() + " total bookings");
+        all.forEach(b -> System.out.println(" - Booking: " + b.getBookingID() + " Status: " + b.getStatusPembayaran()));
+
+        // Return ALL bookings (including Pending) for now to debug
+        java.util.List<Booking> history = all.stream()
+                // .filter(b -> !"Pending".equals(b.getStatusPembayaran()))  <-- DISABLED FILTER
+                .sorted((b1, b2) -> b2.getBookingID().compareTo(b1.getBookingID()))
+                .collect(java.util.stream.Collectors.toList());
+                
+        return ResponseEntity.ok(history);
     }
 
     // 3. Update Guest Details (Name, DOB, Gender)
@@ -73,16 +114,25 @@ public class CustomerApiController {
         }
     }
 
-    // 4. Process Payment
-    @PutMapping("/booking/{bookingId}/pay")
-    public ResponseEntity<?> processPayment(@PathVariable String bookingId,
-            @RequestBody Map<String, Object> paymentData) {
+    // 4. Process Payment (Single or Bulk)
+    @PutMapping("/booking/pay")
+    public ResponseEntity<?> processPayment(@RequestBody Map<String, Object> paymentData) {
         try {
             Double amount = Double.valueOf(paymentData.get("amount").toString());
             String method = (String) paymentData.getOrDefault("method", "QRIS");
-
-            Booking booking = bookingService.processPayment(bookingId, amount, method);
-            return ResponseEntity.ok(booking);
+            
+            // Allow paying for specific booking IDs
+            if (paymentData.containsKey("bookingIds")) {
+                java.util.List<String> ids = (java.util.List<String>) paymentData.get("bookingIds");
+                bookingService.processGroupPayment(ids, amount, method);
+                return ResponseEntity.ok(java.util.Collections.singletonMap("message", "Payment for " + ids.size() + " bookings successful"));
+            } else if (paymentData.containsKey("bookingId")) {
+                 String bookingId = (String) paymentData.get("bookingId");
+                 Booking b = bookingService.processPayment(bookingId, amount, method);
+                 return ResponseEntity.ok(b);
+            }
+            
+            return ResponseEntity.badRequest().body("bookingIds or bookingId required");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
