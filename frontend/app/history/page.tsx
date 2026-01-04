@@ -45,7 +45,11 @@ export default function HistoryPage() {
             })
             .catch(err => {
                 console.error(err);
-                setError(err.response?.data?.message || err.message || 'Failed to fetch history (Backend might need restart)');
+                if (err.response?.status === 401) {
+                    setError('SESSION_EXPIRED');
+                } else {
+                    setError(err.response?.data?.message || err.message || 'Failed to fetch history');
+                }
                 setLoading(false);
             });
     }, [router]);
@@ -85,21 +89,24 @@ export default function HistoryPage() {
             </nav>
 
             <div className="max-w-5xl mx-auto px-6 py-12">
-                {error && (
+                {error && error !== 'SESSION_EXPIRED' && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
                         <strong>Error:</strong> {error}
-                        <p className="text-sm mt-1">Please ensure the Backend server is running and has been restarted to apply the latest updates.</p>
+                        <p className="text-sm mt-1">Gagal mengambil riwayat. Pastikan server backend sedang berjalan.</p>
                     </div>
                 )}
 
-                {bookings.length === 0 && !error ? (
+                {(bookings.length === 0 || error === 'SESSION_EXPIRED') && (error !== 'SESSION_EXPIRED' ? !error : true) && (
                     <div className="text-center py-20 bg-white rounded-xl shadow-lg border-t-4 border-[var(--color-gold-500)]">
-                        <p className="text-xl text-gray-500 mb-6 font-serif">You haven't made any bookings yet.</p>
-                        <Link href="/booking" className="px-8 py-3 bg-[var(--color-dark-900)] text-white rounded hover:bg-[var(--color-gold-600)] transition-colors uppercase tracking-widest text-sm font-bold">
-                            Book a Room
+                        <p className="text-xl text-gray-500 mb-4 font-serif">Anda belum memiliki riwayat pemesanan.</p>
+                        <p className="text-lg text-gray-700 mb-8">Silakan lakukan<strong> pemesanan kamar</strong> terlebih dahulu untuk melihat riwayat Anda di sini.</p>
+                        <Link href="/booking" className="px-8 py-3 bg-[var(--color-dark-900)] text-white rounded hover:bg-[var(--color-gold-600)] transition-colors uppercase tracking-widest text-sm font-bold shadow-md">
+                            Pesan Kamar Sekarang
                         </Link>
                     </div>
-                ) : (
+                )}
+
+                {bookings.length > 0 && (
                     <div className="space-y-6">
                         {bookings.map((booking) => {
                             const start = new Date(booking.tanggalCheckIn);
@@ -168,6 +175,6 @@ export default function HistoryPage() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

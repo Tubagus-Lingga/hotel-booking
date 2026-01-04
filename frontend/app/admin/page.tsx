@@ -15,16 +15,17 @@ export default function AdminDashboard() {
     const [recentBookings, setRecentBookings] = useState<any[]>([]);
 
     useEffect(() => {
-        // Fetch stats from our new API
-        // Fetch stats from our new API
         api.get('/admin/dashboard-stats')
             .then(res => setStats(res.data))
-            .catch(err => console.error("Failed to fetch stats", err));
+            .catch(err => {
+                console.error("Failed to fetch stats", err);
+                alert("Gagal memuat statistik dashboard. Pastikan backend berjalan dengan benar.");
+            });
 
-        // Fetch recent bookings
+
         api.get('/admin/bookings')
             .then(res => {
-                // Get 5 most recent bookings
+
                 const sorted = res.data.sort((a: any, b: any) => {
                     return new Date(b.tanggalCheckIn).getTime() - new Date(a.tanggalCheckIn).getTime();
                 });
@@ -33,11 +34,33 @@ export default function AdminDashboard() {
             .catch(err => console.error("Failed to fetch bookings", err));
     }, []);
 
+    const handleDeleteAll = () => {
+        if (confirm('PERINGATAN: Apakah Anda yakin ingin mengosongkan SEMUA data booking dan kamar? Tindakan ini tidak dapat dibatalkan.')) {
+            api.delete('/admin/delete-all-data')
+                .then(res => {
+                    alert(res.data.message || 'Data berhasil dikosongkan.');
+                    window.location.reload();
+                })
+                .catch(err => {
+                    alert('Gagal mengosongkan data. Pastikan backend sudah di-restart.');
+                    console.error(err);
+                });
+        }
+    };
+
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-serif text-[var(--color-dark-900)]">Dashboard Overview</h1>
-                <p className="text-gray-500 mt-1">Here is what's happening with your hotel today.</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-serif text-[var(--color-dark-900)]">Dashboard Overview</h1>
+                    <p className="text-gray-500 mt-1">Here is what's happening with your hotel today.</p>
+                </div>
+                <button
+                    onClick={handleDeleteAll}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                >
+                    Kosongkan Semua Data
+                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -59,7 +82,6 @@ export default function AdminDashboard() {
                 />
             </div>
 
-            {/* Recent Bookings */}
             <div className="bg-white rounded-xl shadow-sm border p-6">
                 <h3 className="text-lg font-medium mb-4 text-[var(--color-dark-800)]">Recent Bookings</h3>
                 {recentBookings.length === 0 ? (
@@ -93,8 +115,8 @@ export default function AdminDashboard() {
                                         </td>
                                         <td className="py-3">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.statusPembayaran === 'Paid'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-yellow-100 text-yellow-700'
                                                 }`}>
                                                 {booking.statusPembayaran}
                                             </span>

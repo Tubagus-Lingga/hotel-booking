@@ -33,7 +33,6 @@ public class LoginController {
             Model model,
             HttpSession session) {
 
-        // Try login with email
         Optional<User> userOpt = userService.loginByEmail(email, password);
 
         if (!userOpt.isPresent()) {
@@ -43,14 +42,12 @@ public class LoginController {
 
         User user = userOpt.get();
 
-        // Save user to session
         session.setAttribute("loginUser", user);
         session.setAttribute("userId", user.getId());
 
         if (user.getRole() == Role.ADMIN) {
             return "redirect:/admin/dashboard";
-        } else if (user.getRole() == Role.RESEPSIONIS) {
-            return "redirect:/resepsionis/dashboard";
+
         } else {
             return "redirect:/customer/dashboard";
         }

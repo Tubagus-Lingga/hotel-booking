@@ -29,13 +29,12 @@ public class PelangganController {
             return "redirect:/login";
         }
 
-        List<Kamar> kamarList = kamarService.getAllKamar(); // or getKamarTersedia()
+        List<Kamar> kamarList = kamarService.getAllKamar();
         model.addAttribute("kamarList", kamarList);
 
         return "customer/dashboard";
     }
 
-    // 🔥 INI YANG KAMU BUTUHKAN
     @GetMapping("/kamar")
     public String lihatKamarTersedia(Model model, HttpSession session) {
         User user = (User) session.getAttribute("loginUser");

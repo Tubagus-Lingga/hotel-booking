@@ -14,8 +14,8 @@ public class CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    public Customer createCustomer(User user, String nama, String alamat, String telepon, String email) {
-        Customer customer = new Customer(nama, alamat, telepon, email, user);
+    public Customer createCustomer(User user, String nama, String email) {
+        Customer customer = new Customer(nama, email, user);
         return customerRepository.save(customer);
     }
 

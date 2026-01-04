@@ -36,31 +36,24 @@ public class RegisterController {
             @RequestParam String nama,
             @RequestParam String email,
             @RequestParam String password,
-            @RequestParam(required = false) String alamat,
-            @RequestParam(required = false) String telepon,
+
             Model model) {
 
-        // Check if email already exists
         if (userService.findByEmail(email).isPresent()) {
             model.addAttribute("error", "Email sudah terdaftar");
             return "register";
         }
 
-        // Create User
         User user = new User();
         user.setEmail(email);
-        user.setUsername(email); // Use email as username
-        user.setPassword(passwordEncoder.encode(password)); // Hash password
+        user.setPassword(passwordEncoder.encode(password));
         user.setRole(Role.PELANGGAN);
 
         User savedUser = userService.save(user);
 
-        // Create Customer
         customerService.createCustomer(
                 savedUser,
                 nama,
-                alamat != null ? alamat : "",
-                telepon != null ? telepon : "",
                 email);
 
         return "redirect:/login?registered=true";

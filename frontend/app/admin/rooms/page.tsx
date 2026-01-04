@@ -19,7 +19,6 @@ export default function RoomsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Form State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRoom, setEditingRoom] = useState<Kamar | null>(null);
     const [formData, setFormData] = useState<{
@@ -55,12 +54,12 @@ export default function RoomsPage() {
     };
 
     const handleDuplicate = (room: Kamar) => {
-        setEditingRoom(null); // Create mode
+        setEditingRoom(null);
         setFormData({
-            nomorKamar: '', // Reset room number as it must be unique
+            nomorKamar: '',
             tipe: room.tipe,
             harga: room.harga,
-            statusKamar: 'Available', // Reset status just in case
+            statusKamar: 'Available',
             fasilitasTambahan: room.fasilitasTambahan,
             gambar: room.gambar || ''
         });
@@ -71,7 +70,10 @@ export default function RoomsPage() {
         if (confirm('Are you sure you want to delete this room?')) {
             api.delete(`/admin/kamar/${id}`)
                 .then(() => fetchRooms())
-                .catch(err => alert('Failed to delete room'));
+                .catch(err => {
+                    const message = err.response?.data?.message || 'Failed to delete room';
+                    alert(message);
+                });
         }
     };
 
@@ -141,7 +143,6 @@ export default function RoomsPage() {
                 </button>
             </div>
 
-            {/* Search Bar */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex items-center gap-3">
                 <Search className="text-gray-400" size={20} />
                 <input
@@ -153,7 +154,6 @@ export default function RoomsPage() {
                 />
             </div>
 
-            {/* Table */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
                 <table className="w-full text-left">
                     <thead className="bg-gray-50 border-b">
@@ -237,7 +237,6 @@ export default function RoomsPage() {
                 </table>
             </div>
 
-            {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -301,7 +300,6 @@ export default function RoomsPage() {
                                             const file = e.target.files?.[0];
                                             if (!file) return;
 
-                                            // Rename to avoid shadowing
                                             const uploadData = new FormData();
                                             uploadData.append('file', file);
 

@@ -22,11 +22,8 @@ export default function BookingPage() {
     const [checkOut, setCheckOut] = useState('');
     const [guests, setGuests] = useState(1);
 
-    // Map room type to list of available rooms
     const [availableRoomsByType, setAvailableRoomsByType] = useState<Map<string, Kamar[]>>(new Map());
 
-
-    // Helper to calculate total price for a room based on dates
     const calculateTotalPrice = (basePrice: number) => {
         if (!checkIn || !checkOut) return 0;
         const start = new Date(checkIn);
@@ -36,11 +33,9 @@ export default function BookingPage() {
         return basePrice * days;
     };
 
-    // Helper to process available rooms (grouping and sorting)
     const processRooms = (rooms: Kamar[]) => {
         const available = rooms.filter(r => r.statusKamar === 'Available');
 
-        // Group by type
         const groups = new Map<string, Kamar[]>();
         available.forEach(room => {
             if (!groups.has(room.tipe)) {
@@ -49,7 +44,6 @@ export default function BookingPage() {
             groups.get(room.tipe)?.push(room);
         });
 
-        // Sort rooms by number in each group
         groups.forEach((list) => {
             list.sort((a, b) => a.nomorKamar.localeCompare(b.nomorKamar, undefined, { numeric: true }));
         });
@@ -78,23 +72,20 @@ export default function BookingPage() {
             return;
         }
 
-        // Automatically select the first available room for this type
         const roomsOfType = availableRoomsByType.get(type);
         if (!roomsOfType || roomsOfType.length === 0) {
             alert('Sorry, this room type is no longer available.');
             return;
         }
 
-        // Pick the first available room
-        const roomId = roomsOfType[0].id; // Server-side might want to double-check availability, but this is fine for now.
-
+        const roomId = roomsOfType[0].id;
         try {
             await api.post('/customer/booking', {
                 kamarId: roomId,
                 namaPemesan: 'Guest',
                 checkIn: checkIn,
                 checkOut: checkOut,
-                tipeKasur: type === 'Standard' ? 'Queen' : 'King', // Simplified logic matching previous code
+                tipeKasur: type === 'Standard' ? 'Queen' : 'King',
                 sarapan: type === 'Deluxe'
             });
             router.push('/cart');
@@ -124,7 +115,6 @@ export default function BookingPage() {
             <div className="max-w-6xl mx-auto px-6 py-12">
                 <h2 className="text-4xl font-serif text-center mb-12">Select Your Stay</h2>
 
-                {/* Search Bar */}
                 <div className="bg-white p-8 rounded-xl shadow-xl mb-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-end">
                     <div className="space-y-2">
                         <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
@@ -146,7 +136,6 @@ export default function BookingPage() {
                     <div className="text-sm text-gray-500 pb-2 italic">*Price calculated based on selected dates.</div>
                 </div>
 
-                {/* Room Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     {availableRoomsByType.size === 0 ? (
                         <div className="col-span-2 text-center text-gray-500 py-12">
@@ -154,7 +143,6 @@ export default function BookingPage() {
                         </div>
                     ) : (
                         Array.from(availableRoomsByType.entries()).map(([type, rooms]) => {
-                            // Use details from the first room of this type for display
                             const displayRoom = rooms[0];
                             const totalPrice = calculateTotalPrice(displayRoom.harga);
                             const hasDates = checkIn && checkOut;
@@ -181,7 +169,6 @@ export default function BookingPage() {
                                                 )}
                                             </div>
 
-                                            {/* Room Number Dropdown - Removed by user request */}
                                             <div className="mb-4">
                                                 <p className="text-sm text-green-600 font-bold flex items-center gap-1">
                                                     <span className="w-2 h-2 rounded-full bg-green-500"></span>

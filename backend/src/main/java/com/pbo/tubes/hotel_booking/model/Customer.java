@@ -12,8 +12,6 @@ public class Customer {
     private Long customerID;
 
     private String nama;
-    private String alamat;
-    private String telepon;
     private String email;
 
     @OneToOne
@@ -28,10 +26,8 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(String nama, String alamat, String telepon, String email, User user) {
+    public Customer(String nama, String email, User user) {
         this.nama = nama;
-        this.alamat = alamat;
-        this.telepon = telepon;
         this.email = email;
         this.user = user;
     }
@@ -53,21 +49,7 @@ public class Customer {
         this.nama = nama;
     }
 
-    public String getAlamat() {
-        return alamat;
-    }
 
-    public void setAlamat(String alamat) {
-        this.alamat = alamat;
-    }
-
-    public String getTelepon() {
-        return telepon;
-    }
-
-    public void setTelepon(String telepon) {
-        this.telepon = telepon;
-    }
 
     public String getEmail() {
         return email;

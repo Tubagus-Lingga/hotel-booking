@@ -11,10 +11,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [authorized, setAuthorized] = useState(false);
 
     useEffect(() => {
-        // Safe check for localStorage
         const role = localStorage.getItem('role');
         if (role !== 'ADMIN') {
-            router.push('/login'); // Redirect unauthorized users
+            router.push('/login');
         } else {
             setAuthorized(true);
         }
@@ -27,12 +26,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
 
     if (!authorized) {
-        return null; // Don't show anything while checking
+        return null;
     }
 
     return (
         <div className="flex h-screen bg-[var(--color-cream-50)]">
-            {/* Sidebar */}
             <aside className="w-64 bg-[var(--color-dark-900)] text-white flex flex-col shadow-2xl">
                 <div className="p-6 border-b border-[var(--color-gold-600)]">
                     <h1 className="text-2xl font-serif text-[var(--color-gold-400)] tracking-wider">
@@ -62,7 +60,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
             </aside>
 
-            {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
                 <header className="h-16 bg-white shadow-sm border-b flex items-center px-8 justify-between">
                     <h2 className="text-xl font-medium text-gray-800">Welcome Back, Admin</h2>

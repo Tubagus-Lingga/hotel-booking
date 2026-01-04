@@ -2,12 +2,12 @@ package com.pbo.tubes.hotel_booking.controller;
 
 import com.pbo.tubes.hotel_booking.model.Booking;
 import com.pbo.tubes.hotel_booking.model.Kamar;
-import com.pbo.tubes.hotel_booking.model.Reservasi;
+import com.pbo.tubes.hotel_booking.model.Role;
 import com.pbo.tubes.hotel_booking.model.User;
 import com.pbo.tubes.hotel_booking.repository.UserRepository;
 import com.pbo.tubes.hotel_booking.service.BookingService;
 import com.pbo.tubes.hotel_booking.service.KamarService;
-import com.pbo.tubes.hotel_booking.service.ReservasiService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,26 +17,22 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:3000") // Allow Next.js to access this
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class AdminApiController {
 
     private final KamarService kamarService;
-    private final ReservasiService reservasiService;
     private final UserRepository userRepository;
     private final BookingService bookingService;
     private final com.pbo.tubes.hotel_booking.repository.BookingRepository bookingRepository;
 
-    public AdminApiController(KamarService kamarService, ReservasiService reservasiService,
+    public AdminApiController(KamarService kamarService,
             UserRepository userRepository, BookingService bookingService,
             com.pbo.tubes.hotel_booking.repository.BookingRepository bookingRepository) {
         this.kamarService = kamarService;
-        this.reservasiService = reservasiService;
         this.userRepository = userRepository;
         this.bookingService = bookingService;
         this.bookingRepository = bookingRepository;
     }
-
-    // ================= KAMAR (ROOMS) =================
 
     @GetMapping("/kamar")
     public ResponseEntity<List<Kamar>> getAllKamar() {
@@ -70,23 +66,18 @@ public class AdminApiController {
     }
 
     @DeleteMapping("/kamar/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteKamar(@PathVariable Long id) {
-        kamarService.delete(id);
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("deleted", Boolean.TRUE);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> deleteKamar(@PathVariable Long id) {
+        try {
+            kamarService.delete(id);
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("deleted", Boolean.TRUE);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
-
-    // ================= RESERVASI (BOOKINGS) =================
-
-    // ================= RESERVASI (BOOKINGS) =================
-
-    @GetMapping("/reservasi")
-    public ResponseEntity<List<Reservasi>> getAllReservasi() {
-        return ResponseEntity.ok(reservasiService.getAllReservasi());
-    }
-
-    // ================= REAL BOOKINGS (NEW) =================
 
     @GetMapping("/bookings")
     public ResponseEntity<List<Booking>> getAllBookings() {
@@ -113,17 +104,10 @@ public class AdminApiController {
         }
     }
 
-    // ================= CUSTOMERS (USERS) =================
-
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllCustomers() {
-        // Return only customers
-        return ResponseEntity.ok(userRepository.findByRole("PELANGGAN"));
+        return ResponseEntity.ok(userRepository.findByRole(Role.PELANGGAN));
     }
-
-    // ================= DASHBOARD STATS =================
-
-    // ================= UPLOAD IMAGE =================
 
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadImage(
@@ -133,21 +117,17 @@ public class AdminApiController {
                 throw new RuntimeException("Empty file");
             }
 
-            // Create uploads directory if not exists
             java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads");
             if (!java.nio.file.Files.exists(uploadDir)) {
                 java.nio.file.Files.createDirectories(uploadDir);
             }
 
-            // Generate filename unique
             String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             java.nio.file.Path targetLocation = uploadDir.resolve(filename);
 
-            // Copy file
             java.nio.file.Files.copy(file.getInputStream(), targetLocation,
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-            // Construct URL
             String fileUrl = "http://localhost:8081/uploads/" + filename;
 
             Map<String, String> response = new HashMap<>();
@@ -155,12 +135,9 @@ public class AdminApiController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Failed to store file " + e.getMessage());
         }
     }
-
-    // ================= DASHBOARD STATS =================
 
     @PostMapping("/fix-payment-amounts")
     public ResponseEntity<Map<String, Object>> fixPaymentAmounts() {
@@ -172,7 +149,6 @@ public class AdminApiController {
 
             for (Booking booking : bookings) {
                 if (booking.getPayment() != null && booking.getKamar() != null) {
-                    // Calculate correct amount based on room price and stay duration
                     long checkIn = booking.getTanggalCheckIn().getTime();
                     long checkOut = booking.getTanggalCheckOut().getTime();
                     long days = (checkOut - checkIn) / (1000 * 60 * 60 * 24);
@@ -180,7 +156,6 @@ public class AdminApiController {
                     double correctAmount = booking.getKamar().getHarga() * days;
                     double currentAmount = booking.getPayment().getTotalPembayaran();
 
-                    // Only update if amounts don't match
                     if (Math.abs(correctAmount - currentAmount) > 0.01) {
                         booking.getPayment().setTotalPembayaran(correctAmount);
                         bookingRepository.save(booking);
@@ -203,33 +178,45 @@ public class AdminApiController {
     @GetMapping("/dashboard-stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
-
-        long totalKamar = kamarService.getAllKamar().size();
-
-        // Use BookingService instead of ReservasiService
-        List<Booking> bookings = bookingService.getAllBookings();
-        long totalReservasi = bookings.size(); // Or filter by status 'Paid'/'Pending' if needed
-        // long totalPelanggan = userRepository.findByRole("PELANGGAN").size();
-        long totalPelanggan = 0; // Temporarily disabled due to Repository error
-
-        // Calculate Revenue from Payments
-        // Calculate Revenue from Payments (Safe Mode)
-        double totalRevenue = 0;
         try {
+            long totalKamar = kamarService.getAllKamar().size();
+            List<Booking> bookings = bookingService.getAllBookings();
+            long totalReservasi = bookings.size();
+            long totalPelanggan = userRepository.findByRole(Role.PELANGGAN).size();
+
+            double totalRevenue = 0;
             totalRevenue = bookings.stream()
                     .filter(b -> b.getPayment() != null)
                     .mapToDouble(b -> b.getPayment().getTotalPembayaran() != null ? b.getPayment().getTotalPembayaran()
                             : 0.0)
                     .sum();
+
+            stats.put("totalKamar", totalKamar);
+            stats.put("totalReservasi", totalReservasi);
+            stats.put("totalPelanggan", totalPelanggan);
+            stats.put("totalRevenue", totalRevenue);
+
+            return ResponseEntity.ok(stats);
         } catch (Exception e) {
-            System.err.println("Error calculating revenue: " + e.getMessage());
+            System.err.println("Dashboard stats error: " + e.getMessage());
+            e.printStackTrace();
+            stats.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(stats);
         }
+    }
 
-        stats.put("totalKamar", totalKamar);
-        stats.put("totalReservasi", totalReservasi);
-        stats.put("totalPelanggan", totalPelanggan);
-        stats.put("totalRevenue", totalRevenue);
-
-        return ResponseEntity.ok(stats);
+    @DeleteMapping("/delete-all-data")
+    public ResponseEntity<Map<String, Object>> deleteAllData() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            bookingService.deleteAllData();
+            result.put("success", true);
+            result.put("message", "Semua data booking dan kamar berhasil dikosongkan.");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
     }
 }

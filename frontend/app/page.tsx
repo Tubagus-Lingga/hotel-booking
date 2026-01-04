@@ -25,7 +25,6 @@ export default function Home() {
   const [role, setRole] = useState('');
 
   useEffect(() => {
-    // Check login status
     const user = localStorage.getItem('user');
     const storedRole = localStorage.getItem('role');
     if (user) {
@@ -38,7 +37,6 @@ export default function Home() {
         const allRooms = res.data || [];
         const available = allRooms.filter((r: Kamar) => r.statusKamar === 'Available');
 
-        // Group unique types
         const uniqueTypes = new Map();
         available.forEach((room: Kamar) => {
           if (!uniqueTypes.has(room.tipe)) {
@@ -67,7 +65,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white text-[var(--color-dark-900)] font-sans">
 
-      {/* Navigation */}
       <nav className="absolute top-0 w-full z-50 px-8 py-6 flex justify-between items-center text-white">
         <h1 className="text-2xl font-serif tracking-widest text-[var(--color-gold-400)]">KANZLER</h1>
         <div className="hidden md:flex gap-8 text-sm tracking-wide uppercase">
@@ -91,7 +88,6 @@ export default function Home() {
                 <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">Account</span>
               </button>
 
-              {/* Dropdown Menu */}
               {showDropdown && (
                 <div className="absolute right-0 mt-4 w-48 bg-white rounded shadow-xl overflow-hidden text-black py-2 origin-top-right z-50 animate-fade-in-down">
                   {role === 'ADMIN' && (
@@ -131,7 +127,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <div className="relative h-screen flex items-center justify-center">
         <div className="absolute inset-0 z-0">
           <img
@@ -154,7 +149,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Facilities Section */}
       <div id="experience" className="py-24 px-8 bg-[var(--color-cream-50)] scroll-mt-20">
         <div className="max-w-6xl mx-auto text-center mb-16">
           <span className="text-[var(--color-gold-600)] uppercase tracking-widest text-xs font-bold">Experience</span>
@@ -180,7 +174,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Room Listing Section */}
       <div id="accommodations" className="py-24 px-8 bg-white scroll-mt-20">
         <div className="max-w-6xl mx-auto text-center mb-16">
           <span className="text-[var(--color-gold-600)] uppercase tracking-widest text-xs font-bold">Accommodations</span>
@@ -208,7 +201,6 @@ export default function Home() {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-                  {/* Badge Status - Hide for aggregated view or show 'Available' */}
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--color-dark-900)] shadow-sm">
                     {room.statusKamar}
                   </div>
@@ -242,9 +234,7 @@ export default function Home() {
       <footer className="bg-[var(--color-dark-900)] text-white py-12 text-center">
         <h2 className="text-2xl font-serif text-[var(--color-gold-400)] mb-6">KANZLER</h2>
         <div className="flex justify-center gap-6 text-gray-400 text-sm mb-8">
-          <Link href="#" className="hover:text-white">Privacy Policy</Link>
-          <Link href="#" className="hover:text-white">Terms of Service</Link>
-          <Link href="#" className="hover:text-white">Contact Us</Link>
+          <Link href="https://wa.me/628212345678" target="_blank" rel="noopener noreferrer" className="hover:text-white">Contact Us</Link>
         </div>
         <p className="text-gray-600 text-xs">© 2025 Kanzler Hotel. All rights reserved.</p>
       </footer>

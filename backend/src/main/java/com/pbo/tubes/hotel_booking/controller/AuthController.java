@@ -4,6 +4,7 @@ import com.pbo.tubes.hotel_booking.model.Role;
 import com.pbo.tubes.hotel_booking.model.User;
 import com.pbo.tubes.hotel_booking.service.CustomerService;
 import com.pbo.tubes.hotel_booking.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,15 +16,17 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class AuthController {
 
     private final UserService userService;
     private final CustomerService customerService;
-
-    public AuthController(UserService userService, CustomerService customerService) {
+    private final PasswordEncoder passwordEncoder;
+    
+    public AuthController(UserService userService, CustomerService customerService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.customerService = customerService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -57,38 +60,32 @@ public class AuthController {
             String email = registerRequest.get("email");
             String password = registerRequest.get("password");
 
-            // Basic validation
-            // Basic validation
             if (name == null || email == null || password == null) {
                 Map<String, String> errorResponse = new HashMap<>();
                 errorResponse.put("message", "Name, Email, and Password are required");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
 
-            // Check if email already exists
             if (userService.findByEmail(email).isPresent()) {
                 Map<String, String> errorResponse = new HashMap<>();
                 errorResponse.put("message", "Email is already registered. Please login.");
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
             }
 
-            // Create User manually since UserService doesn't have register method
             User newUser = new User();
-            newUser.setUsername(email); // Use email as username
+            newUser.setUsername(email);
             newUser.setEmail(email);
-            newUser.setPassword(password);
+            newUser.setPassword(passwordEncoder.encode(password));
             newUser.setRole(Role.PELANGGAN);
 
             User savedUser = userService.save(newUser);
 
-            // Create Customer record
-            customerService.createCustomer(savedUser, name, "", "", email);
+            customerService.createCustomer(savedUser, name, email);
 
             Map<String, String> successResponse = new HashMap<>();
             successResponse.put("message", "Registration successful");
             return ResponseEntity.ok(successResponse);
         } catch (Exception e) {
-            e.printStackTrace(); // PRINT ERROR TO CONSOLE
             System.out.println("REGISTRATION ERROR: " + e.getMessage());
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("message", "Registration failed: " + e.getMessage());

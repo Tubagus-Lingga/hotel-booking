@@ -19,7 +19,7 @@ public class InvoiceService {
     public Invoice generateInvoice(Booking booking) {
         String invoiceId = "INV" + System.currentTimeMillis();
 
-        // Calculate total days
+
         long diff = booking.getTanggalCheckOut().getTime() - booking.getTanggalCheckIn().getTime();
         long days = diff / (1000 * 60 * 60 * 24);
 

@@ -17,8 +17,6 @@ export default function CustomersPage() {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        // API endpoint doesn't return detailed user info like address/phone yet unless we join tables,
-        // but we'll display what we have from the User table.
         axios.get('http://localhost:8081/api/admin/users')
             .then(res => {
                 setCustomers(res.data);
@@ -39,7 +37,6 @@ export default function CustomersPage() {
                 <p className="text-gray-500 text-sm">View details of registered members</p>
             </div>
 
-            {/* Search Bar */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8 flex items-center gap-3 w-full max-w-md">
                 <Search className="text-gray-400" size={20} />
                 <input

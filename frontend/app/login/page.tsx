@@ -21,16 +21,16 @@ export default function LoginPage() {
 
             const { user, role } = res.data;
 
-            // Store user info and role
+
             localStorage.setItem('user', JSON.stringify(user));
             localStorage.setItem('role', role);
 
-            // RBAC Redirect Logic
+
             if (role === 'ADMIN') {
                 router.push('/admin');
             } else {
-                router.push('/'); // Redirect customers to Home
-                // Optionally show a "Logged in" toast here
+                router.push('/');
+
             }
 
         } catch (err: any) {
@@ -47,7 +47,6 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-dark-900)] relative overflow-hidden">
-            {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
 
             <div className="relative z-10 w-full max-w-md bg-white p-8 rounded-none shadow-2xl border-t-4 border-[var(--color-gold-500)]">
