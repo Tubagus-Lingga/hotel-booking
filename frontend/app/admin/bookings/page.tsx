@@ -254,13 +254,13 @@ export default function BookingsPage() {
             {isAssignModalOpen && selectedBooking && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
-                        <h3 className="text-lg font-serif font-medium mb-4">Assign Room for #{selectedBooking.bookingID}</h3>
+                        <h3 className="text-xl font-serif font-bold mb-4 text-gray-900">Assign Room for #{selectedBooking.bookingID}</h3>
 
                         <form onSubmit={handleAssignRoom}>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Room</label>
+                                <label className="block text-sm font-bold text-gray-800 mb-2">Select Room</label>
                                 <select
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-gold-400)] outline-none"
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-gold-400)] outline-none text-gray-900 font-medium"
                                     value={selectedRoomId || ''}
                                     onChange={(e) => setSelectedRoomId(Number(e.target.value))}
                                 >
@@ -299,25 +299,25 @@ export default function BookingsPage() {
             {isEditDatesModalOpen && selectedBooking && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
-                        <h3 className="text-lg font-serif font-medium mb-4">Edit Dates for #{selectedBooking.bookingID}</h3>
+                        <h3 className="text-xl font-serif font-bold mb-4 text-gray-900">Edit Dates for #{selectedBooking.bookingID}</h3>
 
                         <form onSubmit={handleUpdateDates}>
                             <div className="space-y-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Check-In Date</label>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">Check-In Date</label>
                                     <input
                                         type="date"
-                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-gray-900 font-medium"
                                         value={newCheckIn}
                                         onChange={(e) => setNewCheckIn(e.target.value)}
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Check-Out Date</label>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">Check-Out Date</label>
                                     <input
                                         type="date"
-                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-gray-900 font-medium"
                                         value={newCheckOut}
                                         onChange={(e) => setNewCheckOut(e.target.value)}
                                         required

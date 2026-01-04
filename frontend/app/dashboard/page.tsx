@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
@@ -43,9 +45,14 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-gray-800">Grand Choco-Pink</h1>
-        <button onClick={handleLogout} className="text-red-600 hover:text-red-700 font-medium">
-          Logout
-        </button>
+        <div className="flex items-center gap-6">
+          <Link href="/cart" className="text-gray-600 hover:text-gray-900 transition">
+            <ShoppingBag size={24} />
+          </Link>
+          <button onClick={handleLogout} className="text-red-600 hover:text-red-700 font-medium">
+            Logout
+          </button>
+        </div>
       </nav>
 
       <main className="max-w-6xl mx-auto p-6 md:p-10">

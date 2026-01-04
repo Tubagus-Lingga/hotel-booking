@@ -9,34 +9,42 @@ import api from '@/lib/api';
 function QRISContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const bookingId = searchParams.get('bookingId');
+    const bookingIdsStr = searchParams.get('bookingIds'); // "id1,id2"
+    const bookingIdStr = searchParams.get('bookingId');   // "id1"
     const amountStr = searchParams.get('amount');
     const [amount, setAmount] = useState<number>(0);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (amountStr) setAmount(Number(amountStr));
-        else if (bookingId) {
-            // Fetch booking to get price if missing
-            // Skip for now, assume passed correctly
-        }
-    }, [amountStr, bookingId]);
+    }, [amountStr]);
 
     const handleCheckPayment = async () => {
         setLoading(true);
         try {
-            // Simulate payment verification call
-            // In real world, this endpoint might check gateway status.
-            // Here we just mark it as paid.
-            console.log('Sending payment with amount:', amount);
-            await api.put(`/customer/booking/${bookingId}/pay`, {
+            // Determine if single or multiple
+            let payload: any = {
                 amount: amount,
                 method: 'QRIS'
-            });
+            };
+
+            if (bookingIdsStr) {
+                payload.bookingIds = bookingIdsStr.split(',');
+            } else if (bookingIdStr) {
+                payload.bookingId = bookingIdStr;
+            } else {
+                throw new Error("No booking ID found");
+            }
+
+            console.log('Sending payment payload:', payload);
+
+            // Use the generic bulk/single endpoint
+            await api.put('/customer/booking/pay', payload);
 
             router.push(`/payment/success?amount=${amount}`);
-        } catch (error) {
-            alert("Payment verification failed. Please try again or contact staff.");
+        } catch (error: any) {
+            console.error(error);
+            alert("Payment verification failed: " + (error.response?.data?.message || error.message));
             setLoading(false);
         }
     };

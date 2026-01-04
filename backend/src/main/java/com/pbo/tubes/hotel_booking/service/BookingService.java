@@ -154,13 +154,17 @@ public class BookingService {
         return bookingRepository.findByCustomer(customer);
     }
 
-    public Booking getLatestPendingBooking(User user) {
+    public List<Booking> getPendingBookings(User user) {
         List<Booking> bookings = getBookingsByUser(user);
-        // Find latest with status "Pending"
         return bookings.stream()
                 .filter(b -> "Pending".equals(b.getStatusPembayaran()))
-                .reduce((first, second) -> second) // Get last
-                .orElse(null);
+                .toList();
+    }
+
+    public Booking getLatestPendingBooking(User user) {
+        List<Booking> pending = getPendingBookings(user);
+        if (pending.isEmpty()) return null;
+        return pending.get(pending.size() - 1);
     }
 
     public Booking updateBookingDetails(String bookingId, String nama, String catatan) {
@@ -191,6 +195,50 @@ public class BookingService {
         booking.setPayment(payment);
 
         return bookingRepository.save(booking);
+    }
+
+    public void processGroupPayment(List<String> bookingIds, Double totalAmount, String method) {
+        // Simple strategy: Mark all as paid. 
+        // In a real app, we might split the payment amount or create one big Invoice.
+        // For this task, we'll mark all as Paid and create individual payment records (or shared).
+        // Let's create individual payment records for simplicity, splitting amount proportionally or just using room price.
+        
+        for (String id : bookingIds) {
+             Booking b = bookingRepository.findById(id).orElse(null);
+             if (b != null) {
+                 b.setStatusPembayaran("Paid");
+                 
+                 // Calculate individual amount
+                 long days = (b.getTanggalCheckOut().getTime() - b.getTanggalCheckIn().getTime()) / (1000 * 3600 * 24);
+                 double amount = b.getKamar().getHarga() * days;
+
+                 com.pbo.tubes.hotel_booking.model.Payment payment = new com.pbo.tubes.hotel_booking.model.Payment();
+                 payment.setPaymentID("P-" + System.currentTimeMillis() + "-" + id);
+                 payment.setBooking(b);
+                 payment.setTotalPembayaran(amount);
+                 payment.setMetodePembayaran(method);
+                 payment.setTanggalPembayaran(new Date());
+                 
+                 b.setPayment(payment);
+                 bookingRepository.save(b);
+             }
+        }
+    }
+
+    public void deleteBooking(String bookingId) {
+        if (bookingRepository.existsById(bookingId)) {
+            // Also update room status back to Available?
+            // Since we marked it as "Booked" in createBooking, we should probably free it up.
+            Booking booking = bookingRepository.findById(bookingId).get();
+            Kamar kamar = booking.getKamar();
+            if (kamar != null) {
+                kamar.setStatusKamar("Available");
+                kamarRepository.save(kamar);
+            }
+            bookingRepository.deleteById(bookingId);
+        } else {
+            throw new RuntimeException("Booking not found");
+        }
     }
 
     public Booking updateBookingDates(String bookingId, String checkInStr, String checkOutStr) {
