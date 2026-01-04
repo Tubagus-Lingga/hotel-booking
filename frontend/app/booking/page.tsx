@@ -36,29 +36,34 @@ export default function BookingPage() {
         return basePrice * days;
     };
 
+    // Helper to process available rooms (grouping and sorting)
+    const processRooms = (rooms: Kamar[]) => {
+        const available = rooms.filter(r => r.statusKamar === 'Available');
+
+        // Group by type
+        const groups = new Map<string, Kamar[]>();
+        available.forEach(room => {
+            if (!groups.has(room.tipe)) {
+                groups.set(room.tipe, []);
+            }
+            groups.get(room.tipe)?.push(room);
+        });
+
+        // Sort rooms by number in each group
+        groups.forEach((list) => {
+            list.sort((a, b) => a.nomorKamar.localeCompare(b.nomorKamar, undefined, { numeric: true }));
+        });
+
+        return groups;
+    };
+
     useEffect(() => {
         const user = localStorage.getItem('user');
         if (!user) router.push('/login');
 
         api.get('/public/kamar')
             .then(res => {
-                const rooms: Kamar[] = res.data || [];
-                const available = rooms.filter(r => r.statusKamar === 'Available');
-
-                // Group by type
-                const groups = new Map<string, Kamar[]>();
-                available.forEach(room => {
-                    if (!groups.has(room.tipe)) {
-                        groups.set(room.tipe, []);
-                    }
-                    groups.get(room.tipe)?.push(room);
-                });
-
-                // Sort rooms by number in each group
-                groups.forEach((list) => {
-                    list.sort((a, b) => a.nomorKamar.localeCompare(b.nomorKamar, undefined, { numeric: true }));
-                });
-
+                const groups = processRooms(res.data || []);
                 setAvailableRoomsByType(groups);
             })
             .catch(console.error);
