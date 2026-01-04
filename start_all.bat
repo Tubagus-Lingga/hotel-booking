@@ -1,10 +1,12 @@
 @echo off
 echo Starting Hotel Booking System...
 
-echo Launching Backend...
-start "Hotel Booking Backend" start_backend.bat
+:: Start Backend (Spring Boot)
+echo Starting Backend (Spring Boot)...
+start "Hotel Booking Backend" cmd /k "cd hotel-booking && mvn spring-boot:run"
 
-echo Launching Frontend...
-start "Hotel Booking Frontend" start_frontend.bat
+:: Start Frontend (Next.js)
+echo Starting Frontend (Next.js)...
+start "Hotel Booking Frontend" cmd /k "cd frontend && npm run dev"
 
-echo Done! Windows have been opened for both services.
+echo System starting... Check the new terminal windows for logs.
