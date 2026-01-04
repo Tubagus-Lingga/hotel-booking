@@ -1,37 +1,44 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="id">
+
 <head>
     <title>Kamar Tersedia</title>
 </head>
+
 <body>
 
-<h2>Daftar Kamar Tersedia</h2>
+    <h2>Daftar Kamar Tersedia</h2>
 
-<table border="1">
-    <tr>
-        <th>No</th>
-        <th>Nomor</th>
-        <th>Tipe</th>
-        <th>Harga</th>
-        <th>Aksi</th>
-    </tr>
+    <table border="1">
+        <tr>
+            <th>No</th>
+            <th>Nomor</th>
+            <th>Tipe</th>
+            <th>Harga</th>
+            <th>Aksi</th>
+        </tr>
 
-    <a th:href="@{/admin/kamar/tambah}">Tambah Kamar</a>
+        <a th:href="@{/admin/kamar/tambah}">Tambah Kamar</a>
 
-    <tr th:each="kamar, i : ${listKamar}">
-        <td th:text="${i.count}"></td>
-        <td th:text="${kamar.nomorKamar}"></td>
-        <td th:text="${kamar.tipe}"></td>
-        <td th:text="${kamar.harga}"></td>
-        <td>
-            <a th:href="@{/admin/kamar/edit/{id}(id=${kamar.id})}">Edit</a>
-            |
-            <a th:href="@{/admin/kamar/hapus/{id}(id=${kamar.id})}" onclick="return confirm('Yakin hapus kamar ini?')">Hapus</a>
-        </td>
-    </tr>
-</table>
+        <tr th:each="kamar, i : ${listKamar}">
+            <td th:text="${i.count}"></td>
+            <td th:text="${kamar.nomorKamar}"></td>
+            <td th:text="${kamar.tipe}"></td>
+            <td th:text="${kamar.harga}"></td>
+            <td>
+                <a th:href="@{/admin/kamar/edit/{id}(id=${kamar.id})}">Edit</a>
+                |
+                <form th:action="@{/admin/kamar/hapus/{id}(id=${kamar.id})}" method="post" style="display:inline;"
+                    onsubmit="return confirm('Yakin hapus kamar ini?');">
+                    <button type="submit"
+                        style="background:none;border:none;color:blue;text-decoration:underline;cursor:pointer;">Hapus</button>
+                </form>
+            </td>
+        </tr>
+    </table>
 
-<a th:href="@{/admin/dashboard}">Kembali</a>
+    <a th:href="@{/admin/dashboard}">Kembali</a>
 
 </body>
+
 </html>
