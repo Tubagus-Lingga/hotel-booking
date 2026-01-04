@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="id">
+
+<head>
+    <title>Form Kamar</title>
+</head>
+
+<body>
+
+    <h2>Form Kamar</h2>
+
+    <form th:action="@{/admin/kamar/simpan}" th:object="${kamar}" method="post">
+
+        <input type="hidden" th:field="*{id}" />
+
+        <div>
+            Nomor Kamar:
+            <input type="text" th:field="*{nomorKamar}" required>
+        </div>
+
+        <div>
+            Tipe:
+            <input type="text" th:field="*{tipe}" required>
+        </div>
+
+        <div>
+            Harga:
+            <input type="number" th:field="*{harga}" required>
+        </div>
+
+        <div>
+            Tersedia:
+            <input type="checkbox" th:field="*{tersedia}">
+        </div>
+
+        <button type="submit">Simpan</button>
+        <a href="/admin/kamar">Kembali</a>
+    </form>
+
+</body>
+
+</html>

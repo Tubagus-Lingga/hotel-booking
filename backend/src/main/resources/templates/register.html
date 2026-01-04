@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Grand Choco-Pink Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2>Join Us</h2>
+
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <form th:action="@{/register}" method="post">
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap</label>
+                    <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="email@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                Sudah punya akun?
+                <a th:href="@{/login}">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

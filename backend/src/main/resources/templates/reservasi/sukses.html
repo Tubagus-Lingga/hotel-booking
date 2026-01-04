@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Success | Grand Choco-Pink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+    <style>
+        .success-card {
+            max-width: 500px;
+            margin: 10vh auto;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: #E8F5E9;
+            color: #2E7D32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+        }
+    </style>
+</head>
+
+<body style="background: #F8F9FA;">
+
+    <div class="success-card">
+        <div class="icon-circle">
+            <i class="fas fa-check"></i>
+        </div>
+        <h2 class="serif" style="color: var(--primary); margin-bottom: 1rem;">Booking Confirmed!</h2>
+        <p style="color: #666; margin-bottom: 2rem;">
+            Terima kasih telah memesan kamar di Grand Choco-Pink.
+            Silakan cek email Anda untuk detail reservasi dan instruksi pembayaran.
+        </p>
+
+        <a th:href="@{/customer/dashboard}" class="btn btn-primary" style="width: 100%;">Back to Dashboard</a>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Daftar Kamar</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #999;
+            padding: 8px;
+        }
+        th {
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Daftar Kamar Hotel</h2>
+
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nomor Kamar</th>
+        <th>Tipe</th>
+        <th>Harga</th>
+        <th>Status</th>
+    </tr>
+
+    <tr th:each="kamar, iter : ${listKamar}">
+        <td th:text="${iter.count}"></td>
+        <td th:text="${kamar.nomorKamar}"></td>
+        <td th:text="${kamar.tipe}"></td>
+        <td th:text="${kamar.harga}"></td>
+        <td th:text="${kamar.tersedia ? 'Tersedia' : 'Tidak Tersedia'}"></td>
+    </tr>
+</table>
+
+</body>
+</html>
