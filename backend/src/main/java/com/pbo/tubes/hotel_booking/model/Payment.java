@@ -21,7 +21,6 @@ public class Payment {
     @JoinColumn(name = "bookingID")
     private Booking booking;
 
-    // Constructors
     public Payment() {
     }
 
@@ -32,7 +31,6 @@ public class Payment {
         this.totalPembayaran = totalPembayaran;
     }
 
-    // Getters and Setters
     public String getPaymentID() {
         return paymentID;
     }
@@ -71,5 +69,23 @@ public class Payment {
 
     public void setBooking(Booking booking) {
         this.booking = booking;
+    }
+
+    // Business methods sesuai class diagram
+    public void processPayment(String paymentID, Payment payment) {
+        // Method untuk memproses pembayaran
+        // Implementation akan dilakukan di service layer
+        System.out.println("Processing payment: " + paymentID);
+        System.out.println("Method: " + payment.getMetodePembayaran());
+        System.out.println("Total: Rp " + payment.getTotalPembayaran());
+    }
+
+    public String getPaymentStatus(String paymentID) {
+        // Method untuk mendapatkan status pembayaran
+        // Implementation akan dilakukan di service layer
+        if (this.booking != null) {
+            return this.booking.getStatusPembayaran();
+        }
+        return "Unknown";
     }
 }

@@ -7,8 +7,6 @@ public class BookingRequest {
     private String namaPemesan;
     private LocalDate checkIn;
     private LocalDate checkOut;
-    private String tipeKasur;
-    private boolean sarapan;
 
     // Getters and Setters
     public Long getKamarId() {
@@ -43,19 +41,4 @@ public class BookingRequest {
         this.checkOut = checkOut;
     }
 
-    public String getTipeKasur() {
-        return tipeKasur;
-    }
-
-    public void setTipeKasur(String tipeKasur) {
-        this.tipeKasur = tipeKasur;
-    }
-
-    public boolean isSarapan() {
-        return sarapan;
-    }
-
-    public void setSarapan(boolean sarapan) {
-        this.sarapan = sarapan;
-    }
 }

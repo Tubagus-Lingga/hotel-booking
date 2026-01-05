@@ -2,7 +2,7 @@
 DELETE FROM invoice;
 DELETE FROM payment;
 DELETE FROM booking;
-DELETE FROM reservasi;
+-- DELETE FROM reservasi;
 DELETE FROM customer;
 DELETE FROM kamar;
 DELETE FROM users;

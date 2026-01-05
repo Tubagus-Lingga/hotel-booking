@@ -128,8 +128,6 @@ public class BookingService {
         booking.setKamar(kamar);
         booking.setTanggalCheckIn(java.sql.Date.valueOf(request.getCheckIn()));
         booking.setTanggalCheckOut(java.sql.Date.valueOf(request.getCheckOut()));
-        booking.setTipeKasur(request.getTipeKasur());
-        booking.setSarapan(request.isSarapan());
         booking.setStatusPembayaran("Pending");
 
         booking.setNamaPemesan(request.getNamaPemesan());

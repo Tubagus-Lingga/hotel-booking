@@ -84,9 +84,7 @@ export default function BookingPage() {
                 kamarId: roomId,
                 namaPemesan: 'Guest',
                 checkIn: checkIn,
-                checkOut: checkOut,
-                tipeKasur: type === 'Standard' ? 'Queen' : 'King',
-                sarapan: type === 'Deluxe'
+                checkOut: checkOut
             });
             router.push('/cart');
         } catch (error: any) {

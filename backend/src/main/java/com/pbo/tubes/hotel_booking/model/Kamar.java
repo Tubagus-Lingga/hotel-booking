@@ -11,22 +11,20 @@ public class Kamar {
     private Long id;
 
     private String nomorKamar;
-    private String tipe; // Standard, Executive
+    private String tipe; 
     private Double harga;
-    private String statusKamar; // Available, Booked, Maintenance
+    private String statusKamar; 
 
     @Column(columnDefinition = "TEXT")
-    private String fasilitasTambahan; // Comma-separated facilities
+    private String fasilitasTambahan; 
 
     @Column(columnDefinition = "TEXT")
-    private String gambar; // URL or path to image
+    private String gambar;
 
-    // ===== GETTER & SETTER =====
     public Long getId() {
         return id;
     }
 
-    // 🔥 INI WAJIB ADA
     public void setId(Long id) {
         this.id = id;
     }
@@ -77,5 +75,22 @@ public class Kamar {
 
     public void setGambar(String gambar) {
         this.gambar = gambar;
+    }
+
+    // Business methods sesuai class diagram
+    public String getDetailKamar() {
+        // Method untuk mendapatkan detail lengkap kamar
+        StringBuilder detail = new StringBuilder();
+        detail.append("Kamar ").append(this.nomorKamar).append("\n");
+        detail.append("Tipe: ").append(this.tipe).append("\n");
+        detail.append("Harga: Rp ").append(this.harga).append("/malam\n");
+        detail.append("Status: ").append(this.statusKamar).append("\n");
+        detail.append("Fasilitas: ").append(this.fasilitasTambahan);
+        return detail.toString();
+    }
+
+    public Boolean isAvailable() {
+        // Method untuk cek apakah kamar tersedia
+        return "Available".equalsIgnoreCase(this.statusKamar);
     }
 }

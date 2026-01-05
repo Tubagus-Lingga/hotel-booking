@@ -19,12 +19,6 @@ public class Booking {
     private String statusPembayaran;
     private String namaPemesan;
 
-    @Temporal(TemporalType.DATE)
-    private Date tanggalLahir;
-
-    private String gender;
-    private String tipeKasur;
-    private boolean sarapan;
     private String catatan;
 
     @ManyToOne
@@ -93,37 +87,7 @@ public class Booking {
         this.namaPemesan = namaPemesan;
     }
 
-    public Date getTanggalLahir() {
-        return tanggalLahir;
-    }
 
-    public void setTanggalLahir(Date tanggalLahir) {
-        this.tanggalLahir = tanggalLahir;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getTipeKasur() {
-        return tipeKasur;
-    }
-
-    public void setTipeKasur(String tipeKasur) {
-        this.tipeKasur = tipeKasur;
-    }
-
-    public boolean isSarapan() {
-        return sarapan;
-    }
-
-    public void setSarapan(boolean sarapan) {
-        this.sarapan = sarapan;
-    }
 
     public String getCatatan() {
         return catatan;
@@ -163,5 +127,31 @@ public class Booking {
 
     public void setInvoice(Invoice invoice) {
         this.invoice = invoice;
+    }
+
+    // Business methods sesuai class diagram
+    public Double calculateTotal(String nomorKamar, int nights) {
+        // Method untuk menghitung total harga booking
+        // Implementation akan dilakukan di service layer
+        if (this.kamar != null) {
+            Double total = this.kamar.getHarga() * nights;
+            System.out.println("Total for " + nights + " nights: Rp " + total);
+            return total;
+        }
+        return 0.0;
+    }
+
+    public void confirmBooking(String bookingID) {
+        // Method untuk konfirmasi booking
+        // Implementation akan dilakukan di service layer
+        System.out.println("Confirming booking: " + bookingID);
+        this.statusPembayaran = "Confirmed";
+    }
+
+    public void cancelBooking(String bookingID) {
+        // Method untuk cancel booking
+        // Implementation akan dilakukan di service layer
+        System.out.println("Cancelling booking: " + bookingID);
+        this.statusPembayaran = "Cancelled";
     }
 }

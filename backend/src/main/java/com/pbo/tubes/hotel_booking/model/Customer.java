@@ -22,7 +22,6 @@ public class Customer {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
-    // Constructors
     public Customer() {
     }
 
@@ -32,7 +31,6 @@ public class Customer {
         this.user = user;
     }
 
-    // Getters and Setters
     public Long getCustomerID() {
         return customerID;
     }
@@ -73,5 +71,25 @@ public class Customer {
 
     public void setBookings(List<Booking> bookings) {
         this.bookings = bookings;
+    }
+
+    // Business methods sesuai class diagram
+    public void register(Customer customer) {
+        // Method untuk registrasi customer baru
+        // Implementation akan dilakukan di service layer
+        System.out.println("Registering customer: " + customer.getNama());
+    }
+
+    public void bookRoom(String nomorKamar, String checkin, String checkout) {
+        // Method untuk booking kamar
+        // Implementation akan dilakukan di service layer
+        System.out.println("Customer " + this.nama + " booking room " + nomorKamar + 
+                         " from " + checkin + " to " + checkout);
+    }
+
+    public void viewBookingHistory(String customerID) {
+        // Method untuk melihat riwayat booking
+        // Implementation akan dilakukan di service layer
+        System.out.println("Viewing booking history for customer: " + customerID);
     }
 }

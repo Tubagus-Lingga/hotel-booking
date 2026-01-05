@@ -106,7 +106,7 @@ public class AdminApiController {
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllCustomers() {
-        return ResponseEntity.ok(userRepository.findByRole(Role.PELANGGAN));
+        return ResponseEntity.ok(userRepository.findByRole(Role.CUSTOMER));
     }
 
     @PostMapping("/upload")
@@ -182,7 +182,7 @@ public class AdminApiController {
             long totalKamar = kamarService.getAllKamar().size();
             List<Booking> bookings = bookingService.getAllBookings();
             long totalReservasi = bookings.size();
-            long totalPelanggan = userRepository.findByRole(Role.PELANGGAN).size();
+            long totalPelanggan = userRepository.findByRole(Role.CUSTOMER).size();
 
             double totalRevenue = 0;
             totalRevenue = bookings.stream()
@@ -212,6 +212,38 @@ public class AdminApiController {
             bookingService.deleteAllData();
             result.put("success", true);
             result.put("message", "Semua data booking dan kamar berhasil dikosongkan.");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
+
+    @PostMapping("/hash-passwords")
+    public ResponseEntity<Map<String, Object>> hashAllPasswords() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            org.springframework.security.crypto.password.PasswordEncoder encoder = 
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+            
+            java.util.List<com.pbo.tubes.hotel_booking.model.User> allUsers = userRepository.findAll();
+            int hashed = 0;
+            
+            for (com.pbo.tubes.hotel_booking.model.User user : allUsers) {
+                String currentPassword = user.getPassword();
+                // Check if password is not already hashed (BCrypt hash starts with $2a$, $2b$, or $2y$)
+                if (!currentPassword.startsWith("$2a$") && !currentPassword.startsWith("$2b$") && !currentPassword.startsWith("$2y$")) {
+                    user.setPassword(encoder.encode(currentPassword));
+                    userRepository.save(user);
+                    hashed++;
+                }
+            }
+            
+            result.put("success", true);
+            result.put("hashed", hashed);
+            result.put("total", allUsers.size());
+            result.put("message", "Successfully hashed " + hashed + " passwords out of " + allUsers.size() + " users");
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             result.put("success", false);

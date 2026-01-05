@@ -21,7 +21,6 @@ public class Invoice {
     @JoinColumn(name = "bookingID")
     private Booking booking;
 
-    // Constructors
     public Invoice() {
     }
 
@@ -31,7 +30,6 @@ public class Invoice {
         this.detailPembayaran = detailPembayaran;
     }
 
-    // Getters and Setters
     public String getInvoiceID() {
         return invoiceID;
     }
@@ -62,5 +60,25 @@ public class Invoice {
 
     public void setBooking(Booking booking) {
         this.booking = booking;
+    }
+
+    // Business methods sesuai class diagram
+    public void generateInvoice(Booking booking) {
+        // Method untuk generate invoice dari booking
+        // Implementation akan dilakukan di service layer
+        System.out.println("Generating invoice for booking: " + booking.getBookingID());
+        this.invoiceID = "INV-" + System.currentTimeMillis();
+        this.tanggalCetak = new Date();
+        this.booking = booking;
+    }
+
+    public void printInvoice(String invoiceID) {
+        // Method untuk print invoice
+        // Implementation akan dilakukan di service layer
+        System.out.println("=== INVOICE ===");
+        System.out.println("Invoice ID: " + invoiceID);
+        System.out.println("Tanggal Cetak: " + this.tanggalCetak);
+        System.out.println("Detail: " + this.detailPembayaran);
+        System.out.println("===============");
     }
 }
